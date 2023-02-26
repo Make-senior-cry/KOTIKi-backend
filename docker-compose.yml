@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: db
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+
+  kotiki-app:
+    build:
+      context: ./
+    container_name: app
+    depends_on:
+      - db
+    image: alpine:latest
+    restart: always
+    ports:
+      - '8080:8080'
+    volumes:
+      - './src/main'
+
+volumes:
+  db:
+    driver: local
