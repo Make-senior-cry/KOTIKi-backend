@@ -21,15 +21,21 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.0'
+	implementation 'org.postgresql:r2dbc-postgresql'
+
 	compileOnly 'org.projectlombok:lombok'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
 	runtimeOnly 'org.postgresql:postgresql'
+
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
