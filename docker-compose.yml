@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     container_name: db
+    build: ./Dockerfile-db
     image: postgres:14.1-alpine
     restart: always
     environment:
@@ -12,17 +13,15 @@ services:
       - '5432:5432'
 
   kotiki-app:
-    build:
-      context: ./
-    container_name: app
+    build: ./Dockerfile-app
+    container_name: kotiki-app
     depends_on:
       - db
-    image: alpine:latest
-    restart: always
+    #image: ubuntu:22.04
+    stdin_open: true
+    tty: true
     ports:
-      - '8080:8080'
-    volumes:
-      - './src/main'
+      - '8000:8000'
 
 volumes:
   db:
