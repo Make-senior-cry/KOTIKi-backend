@@ -3,25 +3,39 @@ version: '3.8'
 services:
   db:
     container_name: db
-    build: ./Dockerfile-db
-    image: postgres:14.1-alpine
+    image: postgres:13.1-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=kotiki
     ports:
       - '5432:5432'
+    expose:
+      - '5432'
 
   kotiki-app:
-    build: ./Dockerfile-app
+    build: ./
     container_name: kotiki-app
     depends_on:
-      - db
-    #image: ubuntu:22.04
+      - flyway
     stdin_open: true
     tty: true
     ports:
-      - '8000:8000'
+      - '8080:8080'
+
+  flyway:
+    image: flyway/flyway:latest
+    command: -locations=filesystem:/flyway/sql -connectRetries=60 migrate
+    volumes:
+      - ./src/main/resources/db/migration/:/flyway/sql
+    depends_on:
+      - db
+    environment:
+      - FLYWAY_USER=postgres
+      - FLYWAY_PASSWORD=postgres
+      - FLYWAY_URL=jdbc:postgresql://db:5432/kotiki
+      - FLYWAY_SCHEMAS=public
 
 volumes:
   db:
