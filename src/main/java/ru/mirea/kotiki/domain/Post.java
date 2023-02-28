@@ -1,12 +1,16 @@
 package ru.mirea.kotiki.domain;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.sql.Timestamp;
 
 @Data
+@NoArgsConstructor
 public class Post {
-    private long id;
+    @Id
+    private Long id;
 
     private String text;
 
