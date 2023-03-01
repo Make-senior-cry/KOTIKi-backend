@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import ru.mirea.kotiki.domain.UserRole;
 
 import java.util.Collection;
 
@@ -17,6 +18,8 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
 
     private String password;
+
+    private UserRole role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
