@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ru.mirea.kotiki.domain.User;
 
 import java.util.Base64;
 import java.util.Date;
@@ -38,7 +39,7 @@ public class JwtUtil {
                 .after(new Date());
     }
 
-    public String generateToken(UserDetailsImpl user) {
+    public String generateToken(User user) {
         HashMap<String, Object> claims = new HashMap<>();
         claims.put("role", List.of(user.getRole()));
 
