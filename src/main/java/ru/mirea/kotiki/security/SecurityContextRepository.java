@@ -2,7 +2,7 @@ package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -14,10 +14,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
-    private final AuthenticationManager authenticationManager;
+    private final ReactiveAuthenticationManager authenticationManager;
 
     @Autowired
-    public SecurityContextRepository(AuthenticationManager authenticationManager) {
+    public SecurityContextRepository(ReactiveAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 

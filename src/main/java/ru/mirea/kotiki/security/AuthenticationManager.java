@@ -1,6 +1,7 @@
 package ru.mirea.kotiki.security;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class AuthenticationManager implements ReactiveAuthenticationManager {
     private final JwtUtil jwtUtil;
 
+    @Autowired
     public AuthenticationManager(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
