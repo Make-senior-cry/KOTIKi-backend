@@ -18,7 +18,7 @@ import ru.mirea.kotiki.services.UserDetailsService;
 @RequestMapping("/auth")
 public class AuthController {
     private final static ResponseEntity<Object> UNAUTHORIZED =
-            ;
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;

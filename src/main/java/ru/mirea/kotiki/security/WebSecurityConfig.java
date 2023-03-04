@@ -1,7 +1,9 @@
 package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -15,12 +17,14 @@ import reactor.core.publisher.Mono;
 
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
+@Configuration
 public class WebSecurityConfig {
     private final ReactiveAuthenticationManager authenticationManager;
     private final ServerSecurityContextRepository securityContextRepository;
 
     @Autowired
-    public WebSecurityConfig(ReactiveAuthenticationManager authenticationManager, ServerSecurityContextRepository securityContextRepository) {
+    public WebSecurityConfig(ReactiveAuthenticationManager authenticationManager,
+                             ServerSecurityContextRepository securityContextRepository) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
     }
