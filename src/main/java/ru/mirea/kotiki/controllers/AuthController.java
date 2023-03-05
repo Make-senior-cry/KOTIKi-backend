@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,10 +26,13 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
-    public AuthController(UserDetailsService userDetailsService, JwtUtil jwtUtil) {
+    public AuthController(UserDetailsService userDetailsService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/sign-in")
@@ -38,18 +42,21 @@ public class AuthController {
                 userDetailsService.findByUsername(credentials.getFirst("email"))
                         .cast(User.class)
                         .map(userDetails -> {
-                                    if (WebSecurityConfig.passwordEncoder().encode(credentials.getFirst("password"))
-                                            .equals(userDetails.getPassword())
+                                    if (passwordEncoder.matches(credentials.getFirst("password"),
+                                            userDetails.getPassword())
                                     ) {
                                         swe.getResponse()
                                                 .addCookie(ResponseCookie
-                                                        .from("jwt", "Bearer " +
-                                                                jwtUtil.generateToken(userDetails))
+                                                        .from("access-token", jwtUtil.generateToken(userDetails))
                                                         .httpOnly(true)
                                                         .build());
                                         log.info("Cookies set");
                                         return ResponseEntity.ok().build();
                                     } else {
+                                        log.info(credentials.getFirst("password"));
+                                        log.info(passwordEncoder
+                                                        .encode(credentials.getFirst("password")));
+                                        log.info(userDetails.getPassword());
                                         log.info("Bad credentials");
                                         return UNAUTHORIZED;
                                     }
