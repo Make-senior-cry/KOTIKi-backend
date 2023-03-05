@@ -26,7 +26,7 @@ public class User implements UserDetails {
 
     private String email;
 
-    @Column("passwordHash")
+    @Column("password_hash")
     private String password;
 
     private UserRole role;

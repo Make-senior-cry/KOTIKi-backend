@@ -9,7 +9,7 @@ import ru.mirea.kotiki.repositories.UserRepository;
 @Service
 public class UserDetailsService implements ReactiveUserDetailsService {
 
-    UserRepository userRepo;
+    private final UserRepository userRepo;
 
     public UserDetailsService(UserRepository userRepo) {
         this.userRepo = userRepo;
@@ -18,6 +18,5 @@ public class UserDetailsService implements ReactiveUserDetailsService {
     @Override
     public Mono<UserDetails> findByUsername(String email) {
         return userRepo.findByEmail(email).cast(UserDetails.class);
-
     }
 }
