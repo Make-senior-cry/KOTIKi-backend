@@ -22,7 +22,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 	implementation 'org.postgresql:r2dbc-postgresql'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
@@ -34,6 +33,10 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 
 	annotationProcessor 'org.projectlombok:lombok'
+
+	implementation group: 'org.flywaydb', name: 'flyway-core', version: '9.15.1'
+	compileOnly(group: 'org.springframework', name: 'spring-jdbc', version: '6.0.6')
+
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
