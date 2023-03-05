@@ -1,7 +1,6 @@
 package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -16,8 +15,8 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import reactor.core.publisher.Mono;
 
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
 @Configuration
+@EnableReactiveMethodSecurity
 public class WebSecurityConfig {
     private final ReactiveAuthenticationManager authenticationManager;
     private final ServerSecurityContextRepository securityContextRepository;
@@ -30,7 +29,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -57,7 +56,7 @@ public class WebSecurityConfig {
                 .authenticationManager(authenticationManager) // TODO: add authManager class
                 .securityContextRepository(securityContextRepository) //TODO: change repo
                 .authorizeExchange()
-                .pathMatchers("/auth/*").permitAll()
+                .pathMatchers("/auth/**").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .build();
