@@ -36,15 +36,12 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    public Mono<ResponseEntity<Object>> register(@RequestBody User user) {
+    public Mono<ResponseEntity<String>> register(@RequestBody User user) {
         log.info("Registration started");
-        return Mono.just(user).map(user1 -> {
-            userDetailsService.register(user1).subscribe();
-            return ResponseEntity.ok().build();
-        }).onErrorReturn(ResponseEntity.badRequest().build());
-
-
-
+        return Mono.just(user)
+                .flatMap(u -> userDetailsService.register(user))
+                .flatMap(u -> Mono.just(ResponseEntity.ok().body("SUCCESS")))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("FAIL")));
     }
 
     @PostMapping("/sign-in")
