@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
-import ru.mirea.kotiki.exceptions.UserAlreadyExistsException;
 import ru.mirea.kotiki.repositories.UserRepository;
 
 import java.sql.Timestamp;
@@ -37,8 +36,11 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
-        return userRepo.findByEmail(user.getEmail()).flatMap(u ->
-                Mono.<User>error(new UserAlreadyExistsException("User already exists")))
-                .switchIfEmpty(userRepo.save(user));
+        return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
+            if(!exists){
+                return userRepo.save(user);
+            }
+            return Mono.empty();
+        });
     }
 }

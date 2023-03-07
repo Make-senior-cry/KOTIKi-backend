@@ -7,6 +7,6 @@ import ru.mirea.kotiki.domain.User;
 public interface UserRepository extends ReactiveCrudRepository<User, Long> {
 
     Mono<User> findByEmail(String email);
-    boolean existsByEmail(String email);
+    Mono<Boolean> existsByEmail(String email);
 
 }
