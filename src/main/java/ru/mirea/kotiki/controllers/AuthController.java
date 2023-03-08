@@ -16,12 +16,15 @@ import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserDetailsService;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-    private final static ResponseEntity<Object> UNAUTHORIZED =
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    private final static ResponseEntity<Object> UNAUTHORIZED = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    private final static ResponseEntity<Object> BAD_REQUEST = ResponseEntity.badRequest().build();
+    private final static ResponseEntity<Object> OK = ResponseEntity.ok().build();
 
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
@@ -45,28 +48,21 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public Mono<ResponseEntity> login(ServerWebExchange swe) {
-        log.info("Auth started");
-        return swe.getFormData().flatMap(credentials ->
-                userDetailsService.findByUsername(credentials.getFirst("email"))
-                        .cast(User.class)
-                        .map(userDetails -> {
-                            if (passwordEncoder.matches(credentials.getFirst("password"),
-                                    userDetails.getPassword())
-                            ) {
-                                swe.getResponse()
-                                        .addCookie(ResponseCookie
-                                                .from("access-token", jwtUtil.generateToken(userDetails))
-                                                .httpOnly(true)
-                                                .build());
-                                log.info("Cookies set");
-                                return ResponseEntity.ok().build();
-                            } else {
-                                log.info("Bad credentials");
-                                return UNAUTHORIZED;
-                            }
-                        })
-                        .defaultIfEmpty(UNAUTHORIZED)
-        );
+    public Mono<ResponseEntity<Object>> login(ServerWebExchange swe, @RequestBody Map<String, String> credentials) {
+        log.info("User authentication with email \"" + credentials.get("email") + "\" started");
+        return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
+            if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
+                swe.getResponse()
+                        .addCookie(ResponseCookie
+                                .from("access-token", jwtUtil.generateToken(u))
+                                .httpOnly(true)
+                                .build());
+                log.info("Cookies set successfully");
+                return OK;
+            } else {
+                log.info("Bad credentials");
+                return UNAUTHORIZED;
+            }
+        }).defaultIfEmpty(BAD_REQUEST);
     }
 }
