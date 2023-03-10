@@ -7,51 +7,79 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.mirea.kotiki.domain.User;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 @Component
 public class JwtUtil {
-    @Value("${jwt.secret}")
-    private String secret;
-    @Value("${jwt.expiration}")
-    private Long expirationTime;
+    @Value("${jwt.access-token.secret}")
+    private String jwtAccessSecret;
 
-    public String extractUsername(String authToken) {
-        return getClaimsFromToken(authToken)
+    @Value("${jwt.refresh-token.secret}")
+    private String jwtRefreshSecret;
+
+    public String extractUsername(String accessToken) {
+        return getClaimsFromAccessToken(accessToken)
                 .getSubject();
     }
 
-    public Claims getClaimsFromToken(String authToken) {
-        String key = Base64.getEncoder().encodeToString(secret.getBytes());
+    public Claims getClaimsFromAccessToken(String accessToken) {
+        String key = Base64.getEncoder().encodeToString(jwtAccessSecret.getBytes());
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(authToken)
+                .parseClaimsJws(accessToken)
                 .getBody();
     }
 
-    public boolean validateToken(String authToken) {
-        return getClaimsFromToken(authToken)
+    public Claims getClaimsFromRefreshToken(String refreshToken) {
+        String key = Base64.getEncoder().encodeToString(jwtRefreshSecret.getBytes());
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(refreshToken)
+                .getBody();
+    }
+
+    public boolean validateAccessToken(String accessToken) {
+        return getClaimsFromAccessToken(accessToken)
                 .getExpiration()
                 .after(new Date());
     }
 
-    public String generateToken(User user) {
-        HashMap<String, Object> claims = new HashMap<>();
-        claims.put("role", List.of(user.getRole()));
+    public boolean validateRefreshToken(String refreshToken) {
+        return getClaimsFromRefreshToken(refreshToken)
+                .getExpiration()
+                .after(new Date());
+    }
 
-        Date creationDate = new Date();
-        Date expirationDate = new Date(creationDate.getTime() + expirationTime * 1000);
+    public String generateAccessToken(User user) {
+        final LocalDateTime now = LocalDateTime.now();
+        final Instant accessExpirationInstant = now.plusMinutes(30).atZone(ZoneId.systemDefault()).toInstant();
+        final Date accessExpiration = Date.from(accessExpirationInstant);
 
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(user.getUsername())
-                .setIssuedAt(creationDate)
-                .setExpiration(expirationDate)
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .setExpiration(accessExpiration)
+                .signWith(Keys.hmacShaKeyFor(jwtAccessSecret.getBytes()))
+                .claim("role", List.of(user.getRole()))
+                .claim("email", user.getEmail())
+                .compact();
+    }
+
+    public String generateRefreshToken(User user) {
+        final LocalDateTime now = LocalDateTime.now();
+        final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
+        final Date refreshExpiration = Date.from(refreshExpirationInstant);
+
+        return Jwts.builder()
+                .setSubject(user.getUsername())
+                .setExpiration(refreshExpiration)
+                .signWith(Keys.hmacShaKeyFor(jwtRefreshSecret.getBytes()))
                 .compact();
     }
 }
