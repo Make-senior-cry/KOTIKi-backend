@@ -26,14 +26,11 @@ public class AuthController {
     private final static ResponseEntity<Object> OK = ResponseEntity.ok().build();
 
     private final UserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
-
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthController(UserDetailsService userDetailsService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+    public AuthController(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -51,7 +48,7 @@ public class AuthController {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
-                setCookie(swe.getResponse(), u);
+                userDetailsService.setCookie(swe.getResponse(), u);
                 log.info("Cookies set successfully");
                 return OK;
             } else {
@@ -59,18 +56,5 @@ public class AuthController {
                 return UNAUTHORIZED;
             }
         }).defaultIfEmpty(BAD_REQUEST);
-    }
-
-    private void setCookie(ServerHttpResponse response, User user) {
-        response.addCookie(ResponseCookie
-                .from("access-token", jwtUtil.generateAccessToken(user))
-                .path("/")
-                .httpOnly(true)
-                .build());
-        response.addCookie(ResponseCookie
-                .from("refresh-token", jwtUtil.generateRefreshToken(user))
-                .path("/")
-                .httpOnly(true)
-                .build());
     }
 }
