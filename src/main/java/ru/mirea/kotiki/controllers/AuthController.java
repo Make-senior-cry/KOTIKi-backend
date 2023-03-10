@@ -64,10 +64,12 @@ public class AuthController {
     private void setCookie(ServerHttpResponse response, User user) {
         response.addCookie(ResponseCookie
                 .from("access-token", jwtUtil.generateAccessToken(user))
+                .path("/")
                 .httpOnly(true)
                 .build());
         response.addCookie(ResponseCookie
                 .from("refresh-token", jwtUtil.generateRefreshToken(user))
+                .path("/")
                 .httpOnly(true)
                 .build());
     }
