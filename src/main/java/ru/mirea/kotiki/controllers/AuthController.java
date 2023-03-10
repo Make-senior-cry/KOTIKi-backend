@@ -5,13 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerResponse;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserDetailsService;
@@ -52,11 +51,7 @@ public class AuthController {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
-                swe.getResponse()
-                        .addCookie(ResponseCookie
-                                .from("access-token", jwtUtil.generateToken(u))
-                                .httpOnly(true)
-                                .build());
+                setCookie(swe.getResponse(), u);
                 log.info("Cookies set successfully");
                 return OK;
             } else {
@@ -64,5 +59,16 @@ public class AuthController {
                 return UNAUTHORIZED;
             }
         }).defaultIfEmpty(BAD_REQUEST);
+    }
+
+    private void setCookie(ServerHttpResponse response, User user) {
+        response.addCookie(ResponseCookie
+                .from("access-token", jwtUtil.generateAccessToken(user))
+                .httpOnly(true)
+                .build());
+        response.addCookie(ResponseCookie
+                .from("refresh-token", jwtUtil.generateRefreshToken(user))
+                .httpOnly(true)
+                .build());
     }
 }
