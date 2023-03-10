@@ -53,10 +53,10 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
-                .authenticationManager(authenticationManager) // TODO: add authManager class
-                .securityContextRepository(securityContextRepository) //TODO: change repo
+                .authenticationManager(authenticationManager)
+                .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
-                .pathMatchers("/auth/**").permitAll()
+                .pathMatchers("/auth/sign-in").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .build();

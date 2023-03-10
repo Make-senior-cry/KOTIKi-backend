@@ -1,6 +1,7 @@
 package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,6 +11,8 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
@@ -28,19 +31,21 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        String authHeader = exchange.getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+        String accessToken;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String authToken = authHeader.substring(7);
+        List<HttpCookie> cookies = exchange.getRequest()
+                .getCookies()
+                .get("access-token");
 
-            UsernamePasswordAuthenticationToken auth
-                    = new UsernamePasswordAuthenticationToken(authToken, authToken);
-            return authenticationManager
-                    .authenticate(auth).map(SecurityContextImpl::new);
+        if (cookies != null) {
+            accessToken = cookies.stream()
+                    .filter(c -> c.getName().equals("access-token"))
+                    .map(HttpCookie::getValue).findFirst().get();
+        } else {
+            return Mono.empty();
         }
 
-        return Mono.empty();
+        var auth = new UsernamePasswordAuthenticationToken(accessToken, accessToken);
+        return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
     }
 }
