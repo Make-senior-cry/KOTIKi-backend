@@ -2,8 +2,6 @@ package ru.mirea.kotiki.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,7 +10,6 @@ import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
 import ru.mirea.kotiki.repositories.UserRepository;
-import ru.mirea.kotiki.security.JwtUtil;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -23,13 +20,11 @@ public class UserDetailsService implements ReactiveUserDetailsService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserDetailsService(UserRepository userRepo, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserDetailsService(UserRepository userRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -47,19 +42,5 @@ public class UserDetailsService implements ReactiveUserDetailsService {
             }
             return Mono.empty();
         });
-    }
-
-
-    public void setCookie(ServerHttpResponse response, User user) {
-        response.addCookie(ResponseCookie
-                .from("access-token", jwtUtil.generateAccessToken(user))
-                .path("/")
-                .httpOnly(true)
-                .build());
-        response.addCookie(ResponseCookie
-                .from("refresh-token", jwtUtil.generateRefreshToken(user))
-                .path("/")
-                .httpOnly(true)
-                .build());
     }
 }
