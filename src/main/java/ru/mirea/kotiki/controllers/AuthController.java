@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.server.HttpServerResponse;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserDetailsService;
@@ -27,11 +26,13 @@ public class AuthController {
 
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/sign-up")
@@ -48,7 +49,7 @@ public class AuthController {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
-                userDetailsService.setCookie(swe.getResponse(), u);
+                setCookie(swe.getResponse(), u);
                 log.info("Cookies set successfully");
                 return OK;
             } else {
@@ -56,5 +57,18 @@ public class AuthController {
                 return UNAUTHORIZED;
             }
         }).defaultIfEmpty(BAD_REQUEST);
+    }
+
+    private void setCookie(ServerHttpResponse response, User user) {
+        response.addCookie(ResponseCookie
+                .from("access-token", jwtUtil.generateAccessToken(user.getEmail(), user.getRole()))
+                .path("/")
+                .httpOnly(true)
+                .build());
+        response.addCookie(ResponseCookie
+                .from("refresh-token", jwtUtil.generateRefreshToken(user.getEmail(), user.getRole()))
+                .path("/")
+                .httpOnly(true)
+                .build());
     }
 }
