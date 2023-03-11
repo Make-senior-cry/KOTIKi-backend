@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.mirea.kotiki.domain.User;
+import ru.mirea.kotiki.domain.UserRole;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,11 +21,6 @@ public class JwtUtil {
 
     @Value("${jwt.refresh-token.secret}")
     private String jwtRefreshSecret;
-
-    public String extractUsername(String accessToken) {
-        return getClaimsFromAccessToken(accessToken)
-                .getSubject();
-    }
 
     public Claims getClaimsFromAccessToken(String accessToken) {
         String key = Base64.getEncoder().encodeToString(jwtAccessSecret.getBytes());
@@ -57,29 +52,29 @@ public class JwtUtil {
                 .after(new Date());
     }
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(String email, UserRole role) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plusMinutes(30).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
 
         return Jwts.builder()
-                .setSubject(user.getUsername())
+                .setSubject(email)
                 .setExpiration(accessExpiration)
                 .signWith(Keys.hmacShaKeyFor(jwtAccessSecret.getBytes()))
-                .claim("role", List.of(user.getRole()))
-                .claim("email", user.getEmail())
+                .claim("role", List.of(role))
                 .compact();
     }
 
-    public String generateRefreshToken(User user) {
+    public String generateRefreshToken(String email, UserRole role) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
         final Date refreshExpiration = Date.from(refreshExpirationInstant);
 
         return Jwts.builder()
-                .setSubject(user.getUsername())
+                .setSubject(email)
                 .setExpiration(refreshExpiration)
                 .signWith(Keys.hmacShaKeyFor(jwtRefreshSecret.getBytes()))
+                .claim("role", List.of(role))
                 .compact();
     }
 }
