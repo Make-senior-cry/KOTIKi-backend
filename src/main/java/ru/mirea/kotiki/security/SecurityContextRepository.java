@@ -2,7 +2,6 @@ package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -31,21 +30,29 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        String accessToken;
+        String accessToken, refreshToken;
 
-        List<HttpCookie> cookies = exchange.getRequest()
+        List<HttpCookie> accessTokenCookies = exchange.getRequest()
                 .getCookies()
                 .get("access-token");
 
-        if (cookies != null) {
-            accessToken = cookies.stream()
+        List<HttpCookie> refreshTokenCookies = exchange.getRequest()
+                .getCookies()
+                .get("refresh-token");
+
+        if (accessTokenCookies != null && refreshTokenCookies != null) {
+            accessToken = accessTokenCookies.stream()
                     .filter(c -> c.getName().equals("access-token"))
+                    .map(HttpCookie::getValue).findFirst().get();
+
+            refreshToken = refreshTokenCookies.stream()
+                    .filter(c -> c.getName().equals("refresh-token"))
                     .map(HttpCookie::getValue).findFirst().get();
         } else {
             return Mono.empty();
         }
 
-        var auth = new UsernamePasswordAuthenticationToken(accessToken, accessToken);
+        var auth = new UsernamePasswordAuthenticationToken(refreshToken, accessToken);
         return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
     }
 }
