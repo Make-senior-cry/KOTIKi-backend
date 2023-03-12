@@ -2,18 +2,22 @@ package ru.mirea.kotiki.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserDetailsService;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -49,7 +53,7 @@ public class AuthController {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
-                setCookie(swe.getResponse(), u);
+                setCookies(swe.getResponse(), u);
                 log.info("Cookies set successfully");
                 return OK;
             } else {
@@ -59,7 +63,13 @@ public class AuthController {
         }).defaultIfEmpty(BAD_REQUEST);
     }
 
-    private void setCookie(ServerHttpResponse response, User user) {
+    @PostMapping("/sign-out")
+    public Mono<ResponseEntity<Object>> signOut(ServerWebExchange swe) {
+        removeCookies(swe.getResponse());
+        return Mono.just(OK);
+    }
+
+    private void setCookies(ServerHttpResponse response, User user) {
         response.addCookie(ResponseCookie
                 .from("access-token", jwtUtil.generateAccessToken(user.getEmail(), user.getRole()))
                 .path("/")
@@ -69,6 +79,21 @@ public class AuthController {
                 .from("refresh-token", jwtUtil.generateRefreshToken(user.getEmail(), user.getRole()))
                 .path("/")
                 .httpOnly(true)
+                .build());
+    }
+
+    private void removeCookies(ServerHttpResponse response) {
+        response.addCookie(ResponseCookie
+                .from("access-token", "expired")
+                .path("/")
+                .httpOnly(true)
+                .maxAge(0)
+                .build());
+        response.addCookie(ResponseCookie
+                .from("refresh-token", "expired")
+                .path("/")
+                .httpOnly(true)
+                .maxAge(0)
                 .build());
     }
 }
