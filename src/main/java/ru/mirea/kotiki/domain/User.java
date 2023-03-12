@@ -1,5 +1,6 @@
 package ru.mirea.kotiki.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -13,6 +14,7 @@ import java.util.Collection;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table("usr")
 public class User implements UserDetails {
     @Id
@@ -32,6 +34,7 @@ public class User implements UserDetails {
     private UserRole role;
 
     private Timestamp creationTimestamp;
+
 
     public User(String name, String email, String password) {
         this.name = name;
