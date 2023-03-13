@@ -79,7 +79,7 @@ public class AuthController {
                 .httpOnly(true)
                 .build());
         response.addCookie(ResponseCookie
-                .from("refresh-token", jwtUtil.generateRefreshToken(user.getEmail(), user.getRole()))
+                .from("refresh-token", jwtUtil.generateRefreshToken())
                 .path("/")
                 .httpOnly(true)
                 .build());

@@ -65,16 +65,14 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateRefreshToken(String email, UserRole role) {
+    public String generateRefreshToken() {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
         final Date refreshExpiration = Date.from(refreshExpirationInstant);
 
         return Jwts.builder()
-                .setSubject(email)
                 .setExpiration(refreshExpiration)
                 .signWith(Keys.hmacShaKeyFor(jwtRefreshSecret.getBytes()))
-                .claim("role", List.of(role))
                 .compact();
     }
 }

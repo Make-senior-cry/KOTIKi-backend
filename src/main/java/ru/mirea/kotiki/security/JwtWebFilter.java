@@ -83,7 +83,7 @@ public class JwtWebFilter implements WebFilter {
                 .httpOnly(true)
                 .build());
         response.addCookie(ResponseCookie
-                .from("refresh-token", jwtUtil.generateRefreshToken(email, role))
+                .from("refresh-token", jwtUtil.generateRefreshToken())
                 .path("/")
                 .httpOnly(true)
                 .build());

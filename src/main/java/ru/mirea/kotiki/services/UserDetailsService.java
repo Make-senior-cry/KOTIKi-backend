@@ -37,7 +37,7 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
-            if(!exists){
+            if (!exists) {
                 return userRepo.save(user);
             }
             return Mono.empty();
