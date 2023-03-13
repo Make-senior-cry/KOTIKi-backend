@@ -24,8 +24,7 @@ import java.util.Map;
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-    private final static ResponseEntity<Object> UNAUTHORIZED = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    private final static ResponseEntity<Object> BAD_REQUEST = ResponseEntity.badRequest().build();
+
     private final static ResponseEntity<Object> OK = ResponseEntity.ok().build();
 
     private final UserDetailsService userDetailsService;
@@ -52,18 +51,18 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public Mono<ResponseEntity<Object>> login(ServerWebExchange swe, @RequestBody Map<String, String> credentials) {
+    public Mono<ResponseEntity<UserDto>> login(ServerWebExchange swe, @RequestBody Map<String, String> credentials) {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
                 setCookies(swe.getResponse(), u);
                 log.info("Cookies set successfully");
-                return OK;
+                return ResponseEntity.ok(new UserDto(u));
             } else {
                 log.info("Bad credentials");
-                return UNAUTHORIZED;
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserDto());
             }
-        }).defaultIfEmpty(BAD_REQUEST);
+        }).defaultIfEmpty(ResponseEntity.badRequest().body(new UserDto()));
     }
 
     @PostMapping("/sign-out")
