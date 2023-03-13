@@ -30,5 +30,3 @@ jobs:
         distribution: 'corretto'
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Test
-      run: ./gradlew test
