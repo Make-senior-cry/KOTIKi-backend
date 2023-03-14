@@ -3,9 +3,7 @@ package ru.mirea.kotiki.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,7 +42,7 @@ public class AuthController {
         return Mono.just(user)
                 .cast(User.class)
                 .flatMap(u -> userDetailsService.register(user))
-                .doOnNext(u -> setCookies(swe.getResponse(), u))
+                .doOnNext(u -> jwtUtil.setCookies(swe.getResponse(), u))
                 .flatMap(u -> Mono.just(new UserDto(u)))
                 .flatMap(u -> Mono.just(ResponseEntity.ok(u)))
                 .defaultIfEmpty(ResponseEntity.badRequest().body(new UserDto()));
@@ -55,7 +53,7 @@ public class AuthController {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
         return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
-                setCookies(swe.getResponse(), u);
+                jwtUtil.setCookies(swe.getResponse(), u);
                 log.info("Cookies set successfully");
                 return ResponseEntity.ok(new UserDto(u));
             } else {
@@ -67,35 +65,7 @@ public class AuthController {
 
     @PostMapping("/sign-out")
     public Mono<ResponseEntity<Object>> signOut(ServerWebExchange swe) {
-        removeCookies(swe.getResponse());
+        jwtUtil.removeCookies(swe.getResponse());
         return Mono.just(OK);
-    }
-
-    private void setCookies(ServerHttpResponse response, User user) {
-        response.addCookie(ResponseCookie
-                .from("access-token", jwtUtil.generateAccessToken(user.getEmail(), user.getRole()))
-                .path("/")
-                .httpOnly(true)
-                .build());
-        response.addCookie(ResponseCookie
-                .from("refresh-token", jwtUtil.generateRefreshToken())
-                .path("/")
-                .httpOnly(true)
-                .build());
-    }
-
-    private void removeCookies(ServerHttpResponse response) {
-        response.addCookie(ResponseCookie
-                .from("access-token", "expired")
-                .path("/")
-                .httpOnly(true)
-                .maxAge(0)
-                .build());
-        response.addCookie(ResponseCookie
-                .from("refresh-token", "expired")
-                .path("/")
-                .httpOnly(true)
-                .maxAge(0)
-                .build());
     }
 }

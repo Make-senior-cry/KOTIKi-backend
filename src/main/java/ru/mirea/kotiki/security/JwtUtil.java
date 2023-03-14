@@ -4,7 +4,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
 
 import java.time.Instant;
@@ -74,5 +77,33 @@ public class JwtUtil {
                 .setExpiration(refreshExpiration)
                 .signWith(Keys.hmacShaKeyFor(jwtRefreshSecret.getBytes()))
                 .compact();
+    }
+
+    public void setCookies(ServerHttpResponse response, User user) {
+        response.addCookie(ResponseCookie
+                .from("access-token", this.generateAccessToken(user.getEmail(), user.getRole()))
+                .path("/")
+                .httpOnly(true)
+                .build());
+        response.addCookie(ResponseCookie
+                .from("refresh-token", this.generateRefreshToken())
+                .path("/")
+                .httpOnly(true)
+                .build());
+    }
+
+    public void removeCookies(ServerHttpResponse response) {
+        response.addCookie(ResponseCookie
+                .from("access-token", "expired")
+                .path("/")
+                .httpOnly(true)
+                .maxAge(0)
+                .build());
+        response.addCookie(ResponseCookie
+                .from("refresh-token", "expired")
+                .path("/")
+                .httpOnly(true)
+                .maxAge(0)
+                .build());
     }
 }
