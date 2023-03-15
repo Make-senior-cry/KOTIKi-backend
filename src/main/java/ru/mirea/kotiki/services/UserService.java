@@ -41,23 +41,14 @@ public class UserService {
         Mono<User> user = userRepo.findByEmail(email);
         AtomicReference<String> imageName = new AtomicReference<>();
         image.flatMap(fp -> {
-            user.flatMap(u -> {
-                u.setImagePath(imagePath.toString() + "/upload/" + fp.filename());
-                return Mono.empty();
-            });
-            return fp.transferTo(imagePath.resolve("/upload/" + fp.filename()));
-        }).switchIfEmpty(Mono.empty());
+            user.flatMap(u -> Mono.just(u.setImagePath(imagePath + "/upload/" + fp.filename()))).subscribe();
+            return fp.transferTo(imagePath.resolve(fp.filename()));
+        }).switchIfEmpty(Mono.empty()).subscribe();
         if(name != null){
-            user.flatMap(u -> {
-                u.setName(name);
-                return Mono.just(u);
-            });
+            user.flatMap(u -> Mono.just(u.setName(name))).subscribe();
         }
         if(description != null){
-            user.flatMap(u -> {
-                u.setDescription(description);
-                return Mono.just(u);
-            });
+            user.flatMap(u -> Mono.just(u.setDescription(description))).subscribe();
         }
         return user.flatMap(userRepo::save).flatMap(u -> getUser(u.getId()));
     }
