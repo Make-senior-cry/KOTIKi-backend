@@ -14,7 +14,7 @@ import ru.mirea.kotiki.services.UserService;
 public class UserController {
 
 
-    UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Mono<UserDto> getCount(@RequestParam int id){
+    public Mono<UserDto> getCount(@RequestParam Long id){
         return userService.getUser(id);
     }
 }

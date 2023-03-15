@@ -19,7 +19,7 @@ public class UserService {
     }
 
 
-    public Mono<UserDto> getUser(Integer id){
+    public Mono<UserDto> getUser(Long id){
         return userRepo.findById(id)
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)

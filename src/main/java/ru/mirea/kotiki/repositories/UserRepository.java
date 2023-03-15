@@ -15,9 +15,9 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     Mono<Boolean> existsByEmail(String email);
 
     @Query("SELECT COUNT(*) FROM user_user WHERE following_id = :id")
-    Mono<Integer> getFollowerCountById(@Param("id") int id);
+    Mono<Integer> getFollowerCountById(@Param("id") Long id);
 
     @Query("SELECT COUNT(*) FROM user_user WHERE follower_id = :id")
-    Mono<Integer> getFollowingCountById(@Param("id") int id);
+    Mono<Integer> getFollowingCountById(@Param("id") Long id);
 
 }
