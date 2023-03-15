@@ -21,7 +21,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/")
+    @GetMapping
     public Mono<UserDto> getCount(@RequestParam int id){
         return userService.getUser(id);
     }
