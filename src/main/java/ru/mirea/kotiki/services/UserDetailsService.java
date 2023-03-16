@@ -36,6 +36,7 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
+        user.setImagePath("default\\default.jpg");
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
             if (!exists) {
                 return userRepo.save(user);

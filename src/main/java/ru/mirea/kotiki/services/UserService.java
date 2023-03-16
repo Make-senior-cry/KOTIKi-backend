@@ -39,6 +39,7 @@ public class UserService {
                                 (imagePath + "\\" + dto.getImageUrl()))));
                     }
                     catch (Exception e) {
+                        log.error("Couldn't load imageFile from local storage");
                         return Mono.just(dto);
                     }
                 });
