@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -15,7 +16,8 @@ import java.nio.file.Paths;
 @Slf4j
 public class UserService {
 
-    private final Path imagePath = Paths.get("D:\\KOTIKi-backend\\src\\main\\resources\\images\\user\\upload");
+    private final Path imagePath = Paths.get("C:\\Users\\user\\IdeaProjects\\KOTIKi-backend\\src\\main" +
+            "\\resources\\images\\user");
 
     private final UserRepository userRepo;
 
@@ -30,7 +32,16 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(id).flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(id).flatMap(i -> Mono.just(dto.setFollowersCount(i))));
+                .flatMap(dto -> userRepo.getFollowerCountById(id).flatMap(i -> Mono.just(dto.setFollowersCount(i))))
+                .flatMap(dto -> {
+                    try{
+                        return Mono.just(dto.setImageFile(Files.readAllBytes(Path.of
+                                (imagePath + "\\" + dto.getImageUrl()))));
+                    }
+                    catch (Exception e) {
+                        return Mono.just(dto);
+                    }
+                });
     }
 
 
