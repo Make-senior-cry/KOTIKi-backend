@@ -3,7 +3,6 @@ package ru.mirea.kotiki.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.http.codec.multipart.FilePart;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
 
@@ -15,7 +14,6 @@ public class UserDto {
     private String name;
 
     private String imageUrl;
-    private byte[] imageFile;
     private String description;
     private String email;
     private UserRole role;
@@ -54,8 +52,4 @@ public class UserDto {
         return this;
     }
 
-    public UserDto setImageFile(byte[] imageFile) {
-        this.imageFile = imageFile;
-        return this;
-    }
 }
