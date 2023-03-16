@@ -32,7 +32,7 @@ public class UserController {
         return userService.getUser(id);
     }
 
-    @PostMapping
+    @PutMapping
     public Mono<ResponseEntity<UserDto>> updateUser(ServerWebExchange swe,
                                            @RequestPart(required = false) String name,
                                            @RequestPart(required = false) String description,
