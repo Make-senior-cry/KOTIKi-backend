@@ -10,7 +10,7 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
 
     Mono<User> findByEmail(String email);
 
-    Mono<User> findById(Integer id);
+    Mono<User> findById(Long id);
 
     Mono<Boolean> existsByEmail(String email);
 

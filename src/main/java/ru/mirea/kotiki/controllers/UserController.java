@@ -2,6 +2,7 @@ package ru.mirea.kotiki.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
@@ -31,20 +32,21 @@ public class UserController {
         return userService.getUser(id);
     }
 
-    @PutMapping
-    public Mono<UserDto> updateUser(ServerWebExchange swe,
-                                    @RequestPart(required = false) String name,
-                                    @RequestPart(required = false) String description,
-                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
-        return userService.updateUser(
-                jwtUtil
+    @PostMapping
+    public Mono<ResponseEntity<UserDto>> updateUser(ServerWebExchange swe,
+                                           @RequestPart(required = false) String name,
+                                           @RequestPart(required = false) String description,
+                                           @RequestPart(required = false) Mono<FilePart> imageFile) {
+        return userService.updateUser(jwtUtil
                         .getClaimsFromAccessToken(swe
                                 .getRequest()
                                 .getCookies()
                                 .getFirst("access-token")
                                 .getValue())
                         .getSubject()
-                ,name,description, imageFile);
+                ,name,description, imageFile)
+                .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
 
     }
 }
