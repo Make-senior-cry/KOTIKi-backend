@@ -32,7 +32,9 @@ public class WebSecurityConfig {
             "/swagger-ui/**",
             // Auth endpoints
             "/auth/sign-in",
-            "/auth/sign-up"
+            "/auth/sign-up",
+            // Static content
+            "/static/**"
     };
 
     private final ReactiveAuthenticationManager authenticationManager;
