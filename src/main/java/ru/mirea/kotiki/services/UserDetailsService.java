@@ -2,6 +2,7 @@ package ru.mirea.kotiki.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,9 @@ import java.util.Date;
 @Service
 @Slf4j
 public class UserDetailsService implements ReactiveUserDetailsService {
+
+    @Value("${server.address}")
+    private String serverAddress;
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -36,7 +40,7 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
-        user.setImagePath("default\\default.jpg");
+        user.setImagePath(serverAddress + "/static/images/user/default/default.jpg");
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
             if (!exists) {
                 return userRepo.save(user);

@@ -2,13 +2,13 @@ package ru.mirea.kotiki.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -16,8 +16,10 @@ import java.nio.file.Paths;
 @Slf4j
 public class UserService {
 
-    private final Path imagePath = Paths.get("C:\\Users\\user\\IdeaProjects\\KOTIKi-backend\\src\\main" +
-            "\\resources\\images\\user");
+    @Value("${server.address}")
+    private String serverAddress;
+
+    private final Path imagePath = Paths.get("D:\\KOTIKi-backend\\src\\main\\resources\\static\\images\\user\\upload\\");
 
     private final UserRepository userRepo;
 
@@ -32,17 +34,7 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(id).flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(id).flatMap(i -> Mono.just(dto.setFollowersCount(i))))
-                .flatMap(dto -> {
-                    try{
-                        return Mono.just(dto.setImageFile(Files.readAllBytes(Path.of
-                                (imagePath + "\\" + dto.getImageUrl()))));
-                    }
-                    catch (Exception e) {
-                        log.error("Couldn't load imageFile from local storage");
-                        return Mono.just(dto);
-                    }
-                });
+                .flatMap(dto -> userRepo.getFollowerCountById(id).flatMap(i -> Mono.just(dto.setFollowersCount(i))));
     }
 
 
@@ -53,7 +45,7 @@ public class UserService {
                 .flatMap(u -> Mono.just(u.setDescription(description)))
                 .flatMap(u -> image.flatMap(fp -> {
                     fp.transferTo(imagePath.resolve(fp.filename())).subscribe();
-                    return Mono.just(u.setImagePath("upload\\" + fp.filename()));
+                    return Mono.just(u.setImagePath(serverAddress + "/static/images/user/upload/" + fp.filename()));
                 }))
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));
