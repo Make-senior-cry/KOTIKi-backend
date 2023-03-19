@@ -11,6 +11,7 @@ import ru.mirea.kotiki.repositories.UserRepository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -19,7 +20,8 @@ public class UserService {
     @Value("${server.address}")
     private String serverAddress;
 
-    private final Path imagePath = Paths.get("D:\\KOTIKi-backend\\src\\main\\resources\\static\\images\\user\\upload\\");
+    private final Path imagePath = Paths.get("C:\\Users\\user\\IdeaProjects\\KOTIKi-backend\\src\\main" +
+            "\\resources\\images\\user");
 
     private final UserRepository userRepo;
 
@@ -50,5 +52,19 @@ public class UserService {
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));
 
+    }
+
+    public Mono<List<UserDto>> searchUsers(String name, Integer skip, Integer limit) {
+        return userRepo.searchUsersByName(name, skip, limit)
+                .map(UserDto::new)
+                .doOnNext(u -> userRepo.getFollowingCountById(u.getId())
+                        .map(u::setFollowingCount).subscribe())
+                .doOnNext(u -> userRepo.getFollowerCountById(u.getId())
+                        .map(u::setFollowersCount).subscribe())
+                .collectList();
+    }
+
+    public Mono<Boolean> getNext(String name, Integer skip, Integer limit) {
+        return userRepo.countUsersByName(name).flatMap(c -> Mono.just( skip + limit < c));
     }
 }

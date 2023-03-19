@@ -3,6 +3,7 @@ package ru.mirea.kotiki.repositories;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.User;
 
@@ -20,4 +21,8 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     @Query("SELECT COUNT(*) FROM user_user WHERE follower_id = :id")
     Mono<Integer> getFollowingCountById(@Param("id") Long id);
 
+    @Query("SELECT * FROM usr WHERE name=:name LIMIT :limit OFFSET :skip")
+    Flux<User> searchUsersByName(String name, Integer skip, Integer limit);
+
+    Mono<Integer> countUsersByName(String name);
 }
