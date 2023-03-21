@@ -25,7 +25,7 @@ git clone https://github.com/Make-senior-cry/KOTIKi-backend.git
 cd KOTIKi-backend
 ```
 
-2. Запустить Docker Compose
+2. Запуск Docker Compose
 ```bash
 docker-compose up
 ```
