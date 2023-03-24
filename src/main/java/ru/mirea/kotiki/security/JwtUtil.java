@@ -4,9 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
 
@@ -57,7 +59,7 @@ public class JwtUtil {
 
     public String generateAccessToken(String email, UserRole role) {
         final LocalDateTime now = LocalDateTime.now();
-        final Instant accessExpirationInstant = now.plusMinutes(30).atZone(ZoneId.systemDefault()).toInstant();
+        final Instant accessExpirationInstant = now.plusMinutes(15).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
 
         return Jwts.builder()
@@ -81,13 +83,17 @@ public class JwtUtil {
 
     public void setCookies(ServerHttpResponse response, User user) {
         response.addCookie(ResponseCookie
-                .from("access-token", this.generateAccessToken(user.getEmail(), user.getRole()))
+                .from("access-token", generateAccessToken(user.getEmail(), user.getRole()))
                 .path("/")
+                .secure(true)
+                .sameSite("None")
                 .httpOnly(true)
                 .build());
         response.addCookie(ResponseCookie
-                .from("refresh-token", this.generateRefreshToken())
+                .from("refresh-token", generateRefreshToken())
                 .path("/")
+                .secure(true)
+                .sameSite("None")
                 .httpOnly(true)
                 .build());
     }
@@ -105,5 +111,24 @@ public class JwtUtil {
                 .httpOnly(true)
                 .maxAge(0)
                 .build());
+    }
+
+    public String extractAccessToken(ServerWebExchange swe) {
+        List<ResponseCookie> accessTokenCookies = swe.getResponse()
+                .getCookies()
+                .get("access-token");
+
+        if (accessTokenCookies == null) {
+            return swe.getRequest()
+                    .getCookies()
+                    .get("access-token")
+                    .stream()
+                    .filter(c -> c.getName().equals("access-token"))
+                    .map(HttpCookie::getValue).findFirst().get();
+        } else {
+            return accessTokenCookies.stream()
+                    .filter(c -> c.getName().equals("access-token"))
+                    .map(HttpCookie::getValue).findFirst().get();
+        }
     }
 }

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -55,10 +54,10 @@ public class JwtWebFilter implements WebFilter {
         try {
             jwtUtil.validateAccessToken(accessToken);
         } catch (ExpiredJwtException e) {
-            Claims claims = jwtUtil.getClaimsFromRefreshToken(refreshToken);
+            Claims claims = e.getClaims();
             List<String> role = claims.get("role", List.class);
 
-            updateCookie(exchange.getResponse(), claims.getSubject(), UserRole.valueOf(role.get(0)));
+            updateCookie(exchange, claims.getSubject(), UserRole.valueOf(role.get(0)));
         }
 
         return chain.filter(exchange);
@@ -76,15 +75,19 @@ public class JwtWebFilter implements WebFilter {
                 .map(HttpCookie::getValue).findFirst().get();
     }
 
-    private void updateCookie(ServerHttpResponse response, String email, UserRole role) {
-        response.addCookie(ResponseCookie
+    private void updateCookie(ServerWebExchange exchange, String email, UserRole role) {
+        exchange.getResponse().addCookie(ResponseCookie
                 .from("access-token", jwtUtil.generateAccessToken(email, role))
                 .path("/")
+                .secure(true)
+                .sameSite("None")
                 .httpOnly(true)
                 .build());
-        response.addCookie(ResponseCookie
+        exchange.getResponse().addCookie(ResponseCookie
                 .from("refresh-token", jwtUtil.generateRefreshToken())
                 .path("/")
+                .secure(true)
+                .sameSite("None")
                 .httpOnly(true)
                 .build());
         log.info("Cookies updated");
