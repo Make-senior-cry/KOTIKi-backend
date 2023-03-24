@@ -11,6 +11,8 @@ import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserService;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/user")
 @Slf4j
@@ -23,13 +25,17 @@ public class UserController {
     @Autowired
     public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
-
         this.jwtUtil = jwtUtil;
     }
 
     @GetMapping
-    public Mono<UserDto> getCount(@RequestParam Long id){
-        return userService.getUser(id);
+    public Mono<UserDto> getUser(ServerWebExchange swe, @RequestParam Optional<Long> id){
+        if (id.isPresent()) {
+            return userService.getUser(id.get());
+        } else {
+            String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+            return userService.getUser(email);
+        }
     }
 
     @PutMapping
@@ -47,6 +53,5 @@ public class UserController {
                 ,name,description, imageFile)
                 .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
-
     }
 }
