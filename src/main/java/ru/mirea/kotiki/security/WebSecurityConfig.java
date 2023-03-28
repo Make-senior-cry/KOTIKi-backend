@@ -32,6 +32,7 @@ public class WebSecurityConfig {
             "/swagger-ui.html",
             "/webjars/**",
             "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
             "/swagger-ui/**",
             // Auth endpoints
             "/auth/sign-in",
