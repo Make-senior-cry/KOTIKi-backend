@@ -12,6 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.reactive.config.WebFluxConfigurerComposite;
 import reactor.core.publisher.Mono;
 
 @EnableWebFluxSecurity
@@ -29,10 +32,13 @@ public class WebSecurityConfig {
             "/swagger-ui.html",
             "/webjars/**",
             "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
             "/swagger-ui/**",
             // Auth endpoints
             "/auth/sign-in",
-            "/auth/sign-up"
+            "/auth/sign-up",
+            // Static content
+            "/static/**"
     };
 
     private final ReactiveAuthenticationManager authenticationManager;
@@ -77,5 +83,16 @@ public class WebSecurityConfig {
                 .anyExchange().authenticated()
                 .and()
                 .build();
+    }
+
+    @Bean
+    public WebFluxConfigurer corsConfigurer() {
+        return new WebFluxConfigurerComposite() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5173")
+                        .allowedMethods("GET", "POST", "PUT").allowCredentials(true);
+            }
+        };
     }
 }

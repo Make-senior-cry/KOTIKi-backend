@@ -12,24 +12,13 @@ import ru.mirea.kotiki.domain.UserRole;
 public class UserDto {
     private Long id;
     private String name;
+
     private String imageUrl;
     private String description;
     private String email;
     private UserRole role;
     private Integer followersCount;
     private Integer followingCount;
-
-
-    public UserDto(User user, Integer followersCount, Integer followingCount) {
-        this.id = user.getId();
-        this.name = user.getName();
-        this.imageUrl = user.getImagePath();
-        this.description = user.getDescription();
-        this.email = user.getEmail();
-        this.role = user.getRole();
-        this.followingCount = followingCount;
-        this.followersCount = followersCount;
-    }
 
     public UserDto(User user) {
         this.id = user.getId();
@@ -38,7 +27,6 @@ public class UserDto {
         this.description = user.getDescription();
         this.email = user.getEmail();
         this.role = user.getRole();
-
     }
 
     public UserDto setFollowersCount(Integer followersCount) {
@@ -50,4 +38,7 @@ public class UserDto {
         this.followingCount = followingCount;
         return this;
     }
+
+
+
 }

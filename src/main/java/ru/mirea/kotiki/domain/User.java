@@ -72,6 +72,21 @@ public class User implements UserDetails {
         return true;
     }
 
+    public User setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public User setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+        return this;
+    }
+
+    public User setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
     @Override
     public boolean isEnabled() {
         return true;
