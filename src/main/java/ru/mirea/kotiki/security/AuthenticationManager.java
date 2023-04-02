@@ -49,7 +49,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         List<SimpleGrantedAuthority> authorities = role.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+        var authenticationToken = new UsernamePasswordAuthenticationToken(
                 username,
                 null,
                 authorities
