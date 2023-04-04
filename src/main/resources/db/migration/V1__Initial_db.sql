@@ -17,6 +17,7 @@ create table post
     image_path varchar(260),
     creation_timestamp timestamp not null,
     reports integer default 0,
+    is_banned boolean not null default false,
     author_id bigint not null,
     foreign key (author_id) references usr(id)
 );

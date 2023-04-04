@@ -39,6 +39,7 @@ public class PostService {
                             .authorId(id)
                             .reports(0)
                             .creationTimestamp(new Timestamp(new Date().getTime()))
+                            .isBanned(false)
                             .build()))
                     .flatMap(p -> imageFile.flatMap(i -> {
                         i.transferTo(Paths.get(path).resolve(i.filename())).subscribe();

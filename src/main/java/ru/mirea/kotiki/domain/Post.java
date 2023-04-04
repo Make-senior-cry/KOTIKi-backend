@@ -24,6 +24,8 @@ public class Post {
 
     private Integer reports;
 
+    private Boolean isBanned;
+
     private Long authorId;
 
     public Post setImagePath(String imagePath) {
