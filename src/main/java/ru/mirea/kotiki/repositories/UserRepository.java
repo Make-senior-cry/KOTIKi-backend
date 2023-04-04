@@ -25,4 +25,7 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     Flux<User> searchUsersByName(String name, Integer skip, Integer limit);
 
     Mono<Integer> countUsersByName(String name);
+
+    @Query("SELECT id FROM usr WHERE email = :email")
+    Mono<Long> getIdByEmail(String email);
 }
