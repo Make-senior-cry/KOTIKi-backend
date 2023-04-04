@@ -29,8 +29,18 @@ public class PostController {
     public Mono<ResponseEntity<Object>> createPost(ServerWebExchange swe,
                                                    @RequestPart(required = false) String text,
                                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
-        postService.createPost(text, imageFile, jwtUtil.getClaimsFromAccessToken(
-                jwtUtil.extractAccessToken(swe)).getSubject());
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return imageFile.flatMap(i -> savePost(text, imageFile, email))
+                .switchIfEmpty(Mono.defer(() -> {
+                    if (text == null) {
+                        return Mono.just(ResponseEntity.badRequest().build());
+                    }
+                    return savePost(text, imageFile, email);
+                }));
+    }
+
+    private Mono<ResponseEntity<Object>> savePost(String text, Mono<FilePart> imageFile, String email) {
+        postService.createPost(text, imageFile, email);
         return Mono.just(ResponseEntity.ok().build());
     }
 }
