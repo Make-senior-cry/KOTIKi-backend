@@ -16,7 +16,10 @@ create table post
     text varchar(2048),
     image_path varchar(260),
     creation_timestamp timestamp not null,
-    reports integer default 0
+    reports integer default 0,
+    is_banned boolean not null default false,
+    author_id bigint not null,
+    foreign key (author_id) references usr(id)
 );
 
 create table tag
@@ -31,14 +34,6 @@ create table user_tag
     tag_id  bigint not null,
     foreign key (user_id) references usr(id),
     foreign key (tag_id) references tag(id)
-);
-
-create table user_post
-(
-    user_id bigint not null,
-    post_id bigint not null,
-    foreign key (user_id) references usr(id),
-    foreign key (post_id) references post(id)
 );
 
 create table post_tag
