@@ -19,4 +19,10 @@ public class WebAppConfig {
         return RouterFunctions
                 .resources("/static/images/user/upload/**", new ClassPathResource("static/images/user/upload/"));
     }
+
+    @Bean
+    public RouterFunction<ServerResponse> postImageRouter() {
+        return RouterFunctions
+                .resources("/static/images/post/upload/**", new ClassPathResource("static/images/post/upload/"));
+    }
 }

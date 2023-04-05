@@ -35,9 +35,9 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(id)
-                        .flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(id)
-                        .flatMap(i -> Mono.just(dto.setFollowersCount(i))));
+                        .map(dto::setFollowingCount))
+                .flatMap(dto -> userRepo.getFollowersCountById(id)
+                        .map(dto::setFollowersCount));
     }
 
     public Mono<UserDto> getUser(String email) {
@@ -45,9 +45,9 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(dto.getId())
-                        .flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(dto.getId())
-                        .flatMap(i -> Mono.just(dto.setFollowersCount(i))));
+                        .map(dto::setFollowingCount))
+                .flatMap(dto -> userRepo.getFollowersCountById(dto.getId())
+                        .map(dto::setFollowersCount));
     }
 
 
@@ -70,7 +70,7 @@ public class UserService {
                 .map(UserDto::new)
                 .doOnNext(u -> userRepo.getFollowingCountById(u.getId())
                         .map(u::setFollowingCount).subscribe())
-                .doOnNext(u -> userRepo.getFollowerCountById(u.getId())
+                .doOnNext(u -> userRepo.getFollowersCountById(u.getId())
                         .map(u::setFollowersCount).subscribe())
                 .collectList();
     }

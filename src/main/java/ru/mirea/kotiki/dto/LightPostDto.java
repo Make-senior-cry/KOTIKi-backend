@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Builder
-public class PostDto {
+public class LightPostDto {
     private Long id;
     private String text;
     private String imageUrl;
@@ -15,5 +15,4 @@ public class PostDto {
     private Boolean banned;
     private Integer likesCount;
     private Integer reportsCount;
-    private UserDto author;
 }
