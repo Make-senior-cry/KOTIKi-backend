@@ -53,9 +53,9 @@ public class PostController {
     }
 
     @PostMapping("/post/like")
-    public Mono<ResponseEntity<Integer>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> map) {
+    public Mono<ResponseEntity<Object>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> map) {
         String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
         return postService.likePost(email, map.get("postId"))
-                .flatMap(c -> Mono.just(ResponseEntity.ok(c)));
+                .flatMap(c -> Mono.just(ResponseEntity.ok(Map.of("likesCount", c))));
     }
 }
