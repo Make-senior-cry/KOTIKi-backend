@@ -4,11 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
 
@@ -42,5 +41,12 @@ public class PostController {
     private Mono<ResponseEntity<Object>> savePost(String text, Mono<FilePart> imageFile, String email) {
         postService.createPost(text, imageFile, email);
         return Mono.just(ResponseEntity.ok().build());
+    }
+
+    @GetMapping("/post")
+    public Mono<ResponseEntity<UserPageDto>> getPosts(@RequestParam("user_id") Long userId, @RequestParam Integer limit,
+                                                      @RequestParam Integer skip) {
+        return postService.loadUserPage(userId, limit, skip)
+                .flatMap(p -> Mono.just(ResponseEntity.ok(p)));
     }
 }
