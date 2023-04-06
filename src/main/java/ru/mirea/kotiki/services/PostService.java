@@ -89,4 +89,12 @@ public class PostService {
                         .map(u::setFollowersCount).subscribe())
                 .map(userPage::setAuthor);
     }
+
+    public Mono<Integer> likePost(String email, Long postId) {
+        return userRepo.getIdByEmail(email)
+                .flatMap(ui -> {
+                    postRepo.saveLike(postId, ui).subscribe();
+                    return postRepo.countLikesByPostId(postId);
+                });
+    }
 }

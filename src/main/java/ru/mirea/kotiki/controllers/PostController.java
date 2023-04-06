@@ -11,6 +11,8 @@ import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
 
+import java.util.Map;
+
 @RestController
 @Slf4j
 public class PostController {
@@ -48,5 +50,12 @@ public class PostController {
                                                       @RequestParam Integer skip) {
         return postService.loadUserPage(userId, limit, skip)
                 .flatMap(p -> Mono.just(ResponseEntity.ok(p)));
+    }
+
+    @PostMapping("/post/like")
+    public Mono<ResponseEntity<Integer>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> map) {
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return postService.likePost(email, map.get("postId"))
+                .flatMap(c -> Mono.just(ResponseEntity.ok(c)));
     }
 }

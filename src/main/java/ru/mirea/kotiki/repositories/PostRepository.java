@@ -12,4 +12,11 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
 
     @Query("SELECT COUNT(*) FROM post WHERE author_id = :userId")
     Mono<Integer> countPostsByAuthorId(Long userId);
+
+    @Query("INSERT INTO post_like(post_id, user_id) SELECT :postId, :userId " +
+            "WHERE NOT EXISTS (SELECT * FROM post_like WHERE post_id = :postId AND user_id = :userId)")
+    Mono<Integer> saveLike(Long postId, Long userId);
+
+    @Query("SELECT COUNT(*) FROM post_like WHERE post_id = :postId")
+    Mono<Integer> countLikesByPostId(Long postId);
 }
