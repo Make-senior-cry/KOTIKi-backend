@@ -76,6 +76,9 @@ public class PostService {
                         .text(p.getText())
                         .createdAt(p.getCreationTimestamp())
                         .build())
+                .flatMap(p -> postRepo.countLikesByPostId(p.getId())
+                            .flatMap(c -> Mono.just(p.setLikesCount(c)))
+                )
                 .collectList()
                 .map(userPage::setPosts);
     }
