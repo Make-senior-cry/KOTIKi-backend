@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true)
 public class UserPageDto {
     private List<LightPostDto> posts;
     private UserDto author;
@@ -18,34 +20,4 @@ public class UserPageDto {
     private Boolean hasPrev;
     private Integer skip;
     private Integer limit;
-
-    public UserPageDto setPosts(List<LightPostDto> posts) {
-        this.posts = posts;
-        return this;
-    }
-
-    public UserPageDto setAuthor(UserDto author) {
-        this.author = author;
-        return this;
-    }
-
-    public UserPageDto setHasNext(boolean hasNext) {
-        this.hasNext = hasNext;
-        return this;
-    }
-
-    public UserPageDto setHasPrev(boolean hasPrev) {
-        this.hasPrev = hasPrev;
-        return this;
-    }
-
-    public UserPageDto setSkip(Integer skip) {
-        this.skip = skip;
-        return this;
-    }
-
-    public UserPageDto setLimit(Integer limit) {
-        this.limit = limit;
-        return this;
-    }
 }
