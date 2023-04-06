@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -20,8 +19,8 @@ public class UserService {
     @Value("${server.address}")
     private String serverAddress;
 
-    private final Path imagePath = Paths.get("C:\\Users\\user\\IdeaProjects\\KOTIKi-backend\\src\\main" +
-            "\\resources\\images\\user");
+    @Value("${user.images.path}")
+    private String path;
 
     private final UserRepository userRepo;
 
@@ -36,9 +35,9 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(id)
-                        .flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(id)
-                        .flatMap(i -> Mono.just(dto.setFollowersCount(i))));
+                        .map(dto::setFollowingCount))
+                .flatMap(dto -> userRepo.getFollowersCountById(id)
+                        .map(dto::setFollowersCount));
     }
 
     public Mono<UserDto> getUser(String email) {
@@ -46,9 +45,9 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
                 .flatMap(dto -> userRepo.getFollowingCountById(dto.getId())
-                        .flatMap(i -> Mono.just(dto.setFollowingCount(i))))
-                .flatMap(dto -> userRepo.getFollowerCountById(dto.getId())
-                        .flatMap(i -> Mono.just(dto.setFollowersCount(i))));
+                        .map(dto::setFollowingCount))
+                .flatMap(dto -> userRepo.getFollowersCountById(dto.getId())
+                        .map(dto::setFollowersCount));
     }
 
 
@@ -58,7 +57,7 @@ public class UserService {
                 .flatMap(u -> Mono.just(u.setName(name)))
                 .flatMap(u -> Mono.just(u.setDescription(description)))
                 .flatMap(u -> image.flatMap(fp -> {
-                    fp.transferTo(imagePath.resolve(fp.filename())).subscribe();
+                    fp.transferTo(Paths.get(path).resolve(fp.filename())).subscribe();
                     return Mono.just(u.setImagePath(serverAddress + "/static/images/user/upload/" + fp.filename()));
                 }))
                 .flatMap(userRepo::save)
@@ -71,7 +70,7 @@ public class UserService {
                 .map(UserDto::new)
                 .doOnNext(u -> userRepo.getFollowingCountById(u.getId())
                         .map(u::setFollowingCount).subscribe())
-                .doOnNext(u -> userRepo.getFollowerCountById(u.getId())
+                .doOnNext(u -> userRepo.getFollowersCountById(u.getId())
                         .map(u::setFollowersCount).subscribe())
                 .collectList();
     }

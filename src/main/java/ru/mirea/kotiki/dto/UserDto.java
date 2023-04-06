@@ -3,16 +3,17 @@ package ru.mirea.kotiki.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 public class UserDto {
     private Long id;
     private String name;
-
     private String imageUrl;
     private String description;
     private String email;
@@ -28,17 +29,4 @@ public class UserDto {
         this.email = user.getEmail();
         this.role = user.getRole();
     }
-
-    public UserDto setFollowersCount(Integer followersCount) {
-        this.followersCount = followersCount;
-        return this;
-    }
-
-    public UserDto setFollowingCount(Integer followingCount) {
-        this.followingCount = followingCount;
-        return this;
-    }
-
-
-
 }
