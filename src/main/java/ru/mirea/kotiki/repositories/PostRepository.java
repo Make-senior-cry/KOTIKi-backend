@@ -24,4 +24,7 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
 
     @Query("DELETE FROM post_like WHERE post_id = :postId AND user_id = :userId")
     Mono<Void> deleteLikeByPostIdAndUserId(Long postId, Long userId);
+
+    @Query("UPDATE post SET is_banned = true WHERE id = :postId")
+    Mono<Void> banPostByPostId(Long postId);
 }

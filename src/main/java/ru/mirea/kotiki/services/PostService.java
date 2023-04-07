@@ -106,4 +106,8 @@ public class PostService {
                             .then(postRepo.countLikesByPostId(postId))
                 );
     }
+
+    public Mono<Void> banPost(Long postId) {
+        return postRepo.banPostByPostId(postId);
+    }
 }
