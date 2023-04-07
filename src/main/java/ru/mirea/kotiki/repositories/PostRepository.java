@@ -7,10 +7,10 @@ import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.Post;
 
 public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
-    @Query("SELECT * FROM post WHERE author_id = :userId LIMIT :limit OFFSET :skip")
+    @Query("SELECT * FROM post WHERE author_id = :userId AND is_banned != true ORDER BY id LIMIT :limit OFFSET :skip")
     Flux<Post> getPostsByUserId(Long userId, Integer limit, Integer skip);
 
-    @Query("SELECT COUNT(*) FROM post WHERE author_id = :userId")
+    @Query("SELECT COUNT(*) FROM post WHERE author_id = :userId AND is_banned != true")
     Mono<Integer> countPostsByAuthorId(Long userId);
 
     @Query("INSERT INTO post_like(post_id, user_id) VALUES(:postId, :userId)")
