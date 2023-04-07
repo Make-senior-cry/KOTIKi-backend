@@ -112,8 +112,16 @@ public class PostService {
         return postRepo.banPostByPostId(postId);
     }
 
-    public Mono<Void> reportPost(String email, Long postId) {
+    public Mono<Boolean> reportPost(String email, Long postId) {
         return userRepo.getIdByEmail(email)
-                .flatMap(ui -> postRepo.saveReport(postId, ui));
+                .flatMap(ui -> postRepo.existsReportByPostIdAndUserId(postId, ui)
+                        .flatMap(exists -> {
+                            if (!exists) {
+                                postRepo.saveReport(postId, ui).subscribe();
+                                return Mono.just(true);
+                            }
+                            else
+                                return Mono.just(false);
+                        }));
     }
 }

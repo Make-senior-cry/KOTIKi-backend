@@ -28,9 +28,11 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
     @Query("UPDATE post SET is_banned = true WHERE id = :postId")
     Mono<Void> banPostByPostId(Long postId);
 
-    @Query("INSERT INTO post_report(post_id, user_id) SELECT :postId, :userId " +
-            "WHERE NOT EXISTS (SELECT NULL FROM post_report WHERE post_id = :postId AND user_id = :userId)")
+    @Query("INSERT INTO post_report(post_id, user_id) VALUES(:postId, :userId)")
     Mono<Void> saveReport(Long postId, Long userId);
+
+    @Query("SELECT EXISTS(SELECT * FROM post_report WHERE post_id = :postId AND user_id = :userId)")
+    Mono<Boolean> existsReportByPostIdAndUserId(Long postId, Long userId);
 
     @Query("SELECT COUNT(*) FROM post_report WHERE post_id = :postId")
     Mono<Integer> countReportsByPostId(Long postId);

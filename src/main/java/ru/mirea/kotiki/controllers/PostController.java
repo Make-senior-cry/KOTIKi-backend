@@ -66,9 +66,14 @@ public class PostController {
     }
 
     @PostMapping("/post/report")
-    public Mono<ResponseEntity<Void>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+    public Mono<ResponseEntity<Object>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
         String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
         return postService.reportPost(email, body.get("postId"))
-                .flatMap(v -> Mono.just(ResponseEntity.ok().build()));
+                .flatMap(flag -> {
+                    if (flag)
+                        return Mono.just(ResponseEntity.ok().build());
+                    else
+                        return Mono.just(ResponseEntity.badRequest().build());
+                });
     }
 }
