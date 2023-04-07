@@ -40,7 +40,6 @@ public class PostService {
             userRepo.getIdByEmail(email).flatMap(id -> Mono.just(Post.builder()
                             .text(text)
                             .authorId(id)
-                            .reports(0)
                             .creationTimestamp(new Timestamp(new Date().getTime()))
                             .isBanned(false)
                             .build()))
@@ -76,6 +75,11 @@ public class PostService {
                         .text(p.getText())
                         .createdAt(p.getCreationTimestamp())
                         .build())
+                .flatMap(p -> postRepo.countLikesByPostId(p.getId())
+                            .flatMap(c -> Mono.just(p.setLikesCount(c)))
+                )
+                .flatMap(p -> postRepo.countReportsByPostId(p.getId())
+                        .flatMap(c -> Mono.just(p.setReportsCount(c))))
                 .collectList()
                 .map(userPage::setPosts);
     }
@@ -88,5 +92,36 @@ public class PostService {
                 .doOnNext(u -> userRepo.getFollowersCountById(userId)
                         .map(u::setFollowersCount).subscribe())
                 .map(userPage::setAuthor);
+    }
+
+    public Mono<Integer> likePost(String email, Long postId) {
+        return userRepo.getIdByEmail(email)
+                .flatMap(ui ->
+                    postRepo.existsLikeByPostIdAndUserId(postId, ui)
+                            .flatMap(exists -> {
+                                if (exists)
+                                    return postRepo.deleteLikeByPostIdAndUserId(postId, ui);
+                                else
+                                    return postRepo.saveLike(postId, ui);
+                            })
+                            .then(postRepo.countLikesByPostId(postId))
+                );
+    }
+
+    public Mono<Void> banPost(Long postId) {
+        return postRepo.banPostByPostId(postId);
+    }
+
+    public Mono<Boolean> reportPost(String email, Long postId) {
+        return userRepo.getIdByEmail(email)
+                .flatMap(ui -> postRepo.existsReportByPostIdAndUserId(postId, ui)
+                        .flatMap(exists -> {
+                            if (!exists) {
+                                postRepo.saveReport(postId, ui).subscribe();
+                                return Mono.just(true);
+                            }
+                            else
+                                return Mono.just(false);
+                        }));
     }
 }

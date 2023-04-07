@@ -11,6 +11,8 @@ import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
 
+import java.util.Map;
+
 @RestController
 @Slf4j
 public class PostController {
@@ -48,5 +50,30 @@ public class PostController {
                                                       @RequestParam Integer skip) {
         return postService.loadUserPage(userId, limit, skip)
                 .flatMap(p -> Mono.just(ResponseEntity.ok(p)));
+    }
+
+    @PostMapping("/post/like")
+    public Mono<ResponseEntity<Object>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return postService.likePost(email, body.get("postId"))
+                .flatMap(c -> Mono.just(ResponseEntity.ok(Map.of("likesCount", c))));
+    }
+
+    @PostMapping("/post/ban")
+    public Mono<ResponseEntity<Void>> banPost(@RequestBody Map<String, Long> body) {
+        return postService.banPost(body.get("postId"))
+                .flatMap(v -> Mono.just(ResponseEntity.ok().build()));
+    }
+
+    @PostMapping("/post/report")
+    public Mono<ResponseEntity<Object>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return postService.reportPost(email, body.get("postId"))
+                .flatMap(flag -> {
+                    if (flag)
+                        return Mono.just(ResponseEntity.ok().build());
+                    else
+                        return Mono.just(ResponseEntity.badRequest().build());
+                });
     }
 }

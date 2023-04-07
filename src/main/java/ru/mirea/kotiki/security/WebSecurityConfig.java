@@ -80,6 +80,7 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(AUTH_WHITELIST).permitAll()
+                .pathMatchers("/post/ban").hasRole("ADMIN")
                 .anyExchange().authenticated()
                 .and()
                 .build();
