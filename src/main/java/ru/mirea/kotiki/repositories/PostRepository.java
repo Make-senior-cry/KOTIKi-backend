@@ -20,11 +20,15 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
     Mono<Integer> countLikesByPostId(Long postId);
 
     @Query("SELECT EXISTS(SELECT * FROM post_like WHERE post_id = :postId AND user_id = :userId)")
-    Mono<Boolean> existsByPostIdAndUserId(Long postId, Long userId);
+    Mono<Boolean> existsLikeByPostIdAndUserId(Long postId, Long userId);
 
     @Query("DELETE FROM post_like WHERE post_id = :postId AND user_id = :userId")
     Mono<Void> deleteLikeByPostIdAndUserId(Long postId, Long userId);
 
     @Query("UPDATE post SET is_banned = true WHERE id = :postId")
     Mono<Void> banPostByPostId(Long postId);
+
+    @Query("INSERT INTO post_report(post_id, user_id) SELECT :postId, :userId " +
+            "WHERE NOT EXISTS (SELECT NULL FROM post_report WHERE post_id = :postId AND user_id = :userId)")
+    Mono<Void> saveReport(Long postId, Long userId);
 }

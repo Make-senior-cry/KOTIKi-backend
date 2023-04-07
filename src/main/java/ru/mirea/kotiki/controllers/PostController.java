@@ -60,8 +60,15 @@ public class PostController {
     }
 
     @PostMapping("/post/ban")
-    public Mono<ResponseEntity<Object>> banPost(@RequestBody Map<String, Long> body) {
+    public Mono<ResponseEntity<Void>> banPost(@RequestBody Map<String, Long> body) {
         return postService.banPost(body.get("postId"))
+                .flatMap(v -> Mono.just(ResponseEntity.ok().build()));
+    }
+
+    @PostMapping("/post/report")
+    public Mono<ResponseEntity<Void>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return postService.reportPost(email, body.get("postId"))
                 .flatMap(v -> Mono.just(ResponseEntity.ok().build()));
     }
 }

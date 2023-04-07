@@ -96,7 +96,7 @@ public class PostService {
     public Mono<Integer> likePost(String email, Long postId) {
         return userRepo.getIdByEmail(email)
                 .flatMap(ui ->
-                    postRepo.existsByPostIdAndUserId(postId, ui)
+                    postRepo.existsLikeByPostIdAndUserId(postId, ui)
                             .flatMap(exists -> {
                                 if (exists)
                                     return postRepo.deleteLikeByPostIdAndUserId(postId, ui);
@@ -109,5 +109,10 @@ public class PostService {
 
     public Mono<Void> banPost(Long postId) {
         return postRepo.banPostByPostId(postId);
+    }
+
+    public Mono<Void> reportPost(String email, Long postId) {
+        return userRepo.getIdByEmail(email)
+                .flatMap(ui -> postRepo.saveReport(postId, ui));
     }
 }
