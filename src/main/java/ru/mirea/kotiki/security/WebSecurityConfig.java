@@ -1,6 +1,7 @@
 package ru.mirea.kotiki.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,9 @@ import reactor.core.publisher.Mono;
 @Configuration
 @EnableReactiveMethodSecurity
 public class WebSecurityConfig {
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     private static final String[] AUTH_WHITELIST = {
             // Swagger endpoints
@@ -91,7 +95,7 @@ public class WebSecurityConfig {
         return new WebFluxConfigurerComposite() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5173")
+                registry.addMapping("/**").allowedOrigins(frontendUrl)
                         .allowedMethods("GET", "POST", "PUT").allowCredentials(true);
             }
         };
