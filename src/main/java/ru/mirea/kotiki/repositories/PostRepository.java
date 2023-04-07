@@ -31,4 +31,7 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
     @Query("INSERT INTO post_report(post_id, user_id) SELECT :postId, :userId " +
             "WHERE NOT EXISTS (SELECT NULL FROM post_report WHERE post_id = :postId AND user_id = :userId)")
     Mono<Void> saveReport(Long postId, Long userId);
+
+    @Query("SELECT COUNT(*) FROM post_report WHERE post_id = :postId")
+    Mono<Integer> countReportsByPostId(Long postId);
 }

@@ -40,7 +40,6 @@ public class PostService {
             userRepo.getIdByEmail(email).flatMap(id -> Mono.just(Post.builder()
                             .text(text)
                             .authorId(id)
-                            .reports(0)
                             .creationTimestamp(new Timestamp(new Date().getTime()))
                             .isBanned(false)
                             .build()))
@@ -79,6 +78,8 @@ public class PostService {
                 .flatMap(p -> postRepo.countLikesByPostId(p.getId())
                             .flatMap(c -> Mono.just(p.setLikesCount(c)))
                 )
+                .flatMap(p -> postRepo.countReportsByPostId(p.getId())
+                        .flatMap(c -> Mono.just(p.setReportsCount(c))))
                 .collectList()
                 .map(userPage::setPosts);
     }
