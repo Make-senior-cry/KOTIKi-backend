@@ -16,7 +16,6 @@ create table post
     text varchar(2048),
     image_path varchar(260),
     creation_timestamp timestamp not null,
-    reports integer default 0,
     is_banned boolean not null default false,
     author_id bigint not null,
     foreign key (author_id) references usr(id)
@@ -73,6 +72,15 @@ create table chat_message
 );
 
 create table post_like
+(
+    id bigserial primary key,
+    post_id bigint not null,
+    user_id bigint not null,
+    foreign key (post_id) references post(id),
+    foreign key (user_id) references usr(id)
+);
+
+create table post_report
 (
     id bigserial primary key,
     post_id bigint not null,
