@@ -3,41 +3,52 @@ package ru.mirea.kotiki.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.ChatMessage;
-import ru.mirea.kotiki.repositories.ChatMessageRepository;
-import ru.mirea.kotiki.services.PubSubService;
+import ru.mirea.kotiki.security.JwtUtil;
+import ru.mirea.kotiki.services.MessageService;
 
-@Controller
+import java.time.Duration;
+
+@RestController
+@RequestMapping("/msg")
 @Slf4j
 public class MessageController {
 
-    private final ChatMessageRepository messageRepository;
-    private final PubSubService pubSubService;
+    private final MessageService msgService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public MessageController(ChatMessageRepository messageRepository, PubSubService pubSubService) {
-        this.messageRepository = messageRepository;
-        this.pubSubService = pubSubService;
+    public MessageController(MessageService msgService, JwtUtil jwtUtil) {
+        this.msgService = msgService;
+        this.jwtUtil = jwtUtil;
     }
 
-    //TEST
-    @MessageMapping("test")
-    public Flux<String> getAllMessages(ServerWebExchange swe){
-        return messageRepository.getAllSent(1).map(ChatMessage::getText);
+
+    @GetMapping("")
+    public Mono<String> health(){
+        log.info("BOOP");
+        return Mono.just("BOOP");
     }
 
-    @MessageMapping("send")
-    public Mono<Void> send(ChatMessage message){
-        return pubSubService.publish(message);
+
+    @PostMapping("")
+    public Mono<ResponseEntity<Object>> send(ServerWebExchange swe, @RequestBody ChatMessage msg){
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+        return Mono.just(ResponseEntity.ok(msgService.saveMsg(msg, email)));
     }
 
-    @MessageMapping("subscribe")
-    public Flux<ChatMessage> subscribe(){
-        return pubSubService.subscribe();
+    @GetMapping(path = "/sub", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ChatMessage> receiveNewMessages(ServerWebExchange swe, @RequestParam Long senderId){
+        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+
+        return Flux.interval(Duration.ofMillis(1000))
+                .flatMap(s -> msgService.receiveNewFromSender(senderId, email));
     }
+
 }
