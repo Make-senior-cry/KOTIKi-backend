@@ -38,7 +38,9 @@ public class WebSecurityConfig {
             "/auth/sign-in",
             "/auth/sign-up",
             // Static content
-            "/static/**"
+            "/static/**",
+            // Health check
+            "/healthcheck"
     };
 
     private final ReactiveAuthenticationManager authenticationManager;
