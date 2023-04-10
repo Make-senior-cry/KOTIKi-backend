@@ -8,23 +8,23 @@ ARG PGPASSWORD
 ARG PGPORT
 ARG PGUSER
 ARG SERVER_ADDRESS
-COPY --chown=gradle:gradle . /home/gradle/src
-WORKDIR /home/gradle/src
-RUN gradle build -x test --no-daemon
+ADD . /kotiki
+WORKDIR /kotiki
+RUN export PROJECT_PATH="/kotiki" && gradle build && gradle run
 
 
-FROM openjdk:17-alpine
-RUN mkdir /app
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/kotiki.jar
-EXPOSE 8080
-ARG DATABASE_URL
-ARG JWT_ACCESS_TOKEN_SECRET
-ARG JWT_REFRESH_TOKEN_SECRET
-ARG PGDATABASE
-ARG PGHOST
-ARG PGPASSWORD
-ARG PGPORT
-ARG PGUSER
-ARG SERVER_ADDRESS
-RUN export PROJECT_PATH=$(pwd)
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "kotiki.jar"]
+#FROM openjdk:17-alpine
+#RUN mkdir /app
+#COPY --from=build /home/gradle/src/build/libs/*.jar /app/kotiki.jar
+#EXPOSE 8080
+#ARG DATABASE_URL
+#ARG JWT_ACCESS_TOKEN_SECRET
+#ARG JWT_REFRESH_TOKEN_SECRET
+#ARG PGDATABASE
+#ARG PGHOST
+#ARG PGPASSWORD
+#ARG PGPORT
+#ARG PGUSER
+#ARG SERVER_ADDRESS
+#RUN export PROJECT_PATH=$(pwd)
+#ENTRYPOINT ["gradle run"]
