@@ -8,10 +8,11 @@ ARG PGPASSWORD
 ARG PGPORT
 ARG PGUSER
 ARG SERVER_ADDRESS
+ARG PROJECT_PATH
 EXPOSE 80
 ADD . /kotiki
 WORKDIR /kotiki
-RUN export PROJECT_PATH=/kotiki && gradle build -x test
+RUN gradle build -x test
 ENTRYPOINT ["gradle", "bootRun"]
 
 
