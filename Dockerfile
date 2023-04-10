@@ -9,7 +9,6 @@ ARG PGPORT
 ARG PGUSER
 ARG SERVER_ADDRESS
 ARG PROJECT_PATH
-ARG PORT
 ADD . /kotiki
 WORKDIR /kotiki
 RUN gradle build -x test
