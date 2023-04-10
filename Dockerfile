@@ -10,7 +10,7 @@ ARG PGUSER
 ARG SERVER_ADDRESS
 ADD . /kotiki
 WORKDIR /kotiki
-RUN export PROJECT_PATH="/kotiki" && gradle build && gradle run
+RUN export PROJECT_PATH=/kotiki && gradle build && gradle run
 
 
 #FROM openjdk:17-alpine
