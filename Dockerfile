@@ -11,7 +11,8 @@ ARG SERVER_ADDRESS
 EXPOSE 80
 ADD . /kotiki
 WORKDIR /kotiki
-RUN export PROJECT_PATH=/kotiki && gradle build -x test && gradle bootRun
+RUN export PROJECT_PATH=/kotiki && gradle build -x test
+ENTRYPOINT ["gradle", "bootRun"]
 
 
 #FROM openjdk:17-alpine
