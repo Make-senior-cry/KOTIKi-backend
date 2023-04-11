@@ -7,9 +7,7 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.Post;
-import ru.mirea.kotiki.dto.LightPostDto;
-import ru.mirea.kotiki.dto.UserDto;
-import ru.mirea.kotiki.dto.UserPageDto;
+import ru.mirea.kotiki.dto.*;
 import ru.mirea.kotiki.repositories.PostRepository;
 import ru.mirea.kotiki.repositories.UserRepository;
 
@@ -123,5 +121,39 @@ public class PostService {
                             else
                                 return Mono.just(false);
                         }));
+    }
+
+    public Mono<FeedDto> getNewPosts(Integer skip, Integer limit) {
+        return postRepo.getNewPosts(skip, limit)
+                .flatMap(this::setAuthor)
+                .collectList()
+                .flatMap(l -> {
+                    FeedDto dto = new FeedDto();
+                    return postRepo.countPosts().flatMap(c -> Mono.just(dto.setHasNext(c - skip - limit > 0)))
+                            .map(d -> d.setSkip(skip).setLimit(limit).setHasPrev(skip != 0).setPosts(l));
+                });
+    }
+
+    private Mono<PostDto> setAuthor(Post post) {
+        return userRepo.findById(post.getAuthorId())
+                .map(UserDto::new)
+                .flatMap(u -> userRepo.getFollowingCountById(post.getAuthorId())
+                        .flatMap(c -> Mono.just(u.setFollowingCount(c))))
+                .flatMap(u -> userRepo.getFollowersCountById(post.getAuthorId())
+                        .flatMap(c -> Mono.just(u.setFollowersCount(c))))
+                .flatMap(u ->
+                    Mono.just(PostDto.builder()
+                            .author(u)
+                            .createdAt(post.getCreationTimestamp())
+                            .text(post.getText())
+                            .id(post.getId())
+                            .banned(post.getIsBanned())
+                            .imageUrl(post.getImagePath())
+                            .build())
+                )
+                .flatMap(p -> postRepo.countLikesByPostId(p.getId())
+                        .flatMap(c -> Mono.just(p.setLikesCount(c))))
+                .flatMap(p -> postRepo.countReportsByPostId(p.getId())
+                        .flatMap(c -> Mono.just(p.setReportsCount(c))));
     }
 }

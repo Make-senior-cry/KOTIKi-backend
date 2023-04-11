@@ -36,4 +36,10 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
 
     @Query("SELECT COUNT(*) FROM post_report WHERE post_id = :postId")
     Mono<Integer> countReportsByPostId(Long postId);
+
+    @Query("SELECT * FROM post ORDER BY creation_timestamp LIMIT :limit OFFSET :skip")
+    Flux<Post> getNewPosts(Integer skip, Integer limit);
+
+    @Query("SELECT COUNT(*) FROM post")
+    Mono<Long> countPosts();
 }
