@@ -40,7 +40,6 @@ public class AuthController {
     public Mono<ResponseEntity<UserDto>> register(ServerWebExchange swe, @RequestBody User user) {
         log.info("User registration with email \"" + user.getEmail() + "\" started");
         return Mono.just(user)
-                .cast(User.class)
                 .flatMap(u -> userDetailsService.register(user))
                 .doOnNext(u -> jwtUtil.setCookies(swe.getResponse(), u))
                 .flatMap(u -> Mono.just(new UserDto(u)))
@@ -52,14 +51,17 @@ public class AuthController {
     @PostMapping("/sign-in")
     public Mono<ResponseEntity<UserDto>> login(ServerWebExchange swe, @RequestBody Map<String, String> credentials) {
         log.info("User authentication with email \"" + credentials.get("email") + "\" started");
-        return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).map(u -> {
+        return userDetailsService.findByUsername(credentials.get("email")).cast(User.class).flatMap(u -> {
             if (passwordEncoder.matches(credentials.get("password"), u.getPassword())) {
                 jwtUtil.setCookies(swe.getResponse(), u);
                 log.info("Cookies set successfully");
-                return ResponseEntity.ok(new UserDto(u));
+                return Mono.just(u)
+                        .flatMap(t -> Mono.just(new UserDto(t)))
+                        .flatMap(userDetailsService::supplementInfo)
+                        .map(ResponseEntity::ok);
             } else {
                 log.info("Bad credentials");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserDto());
+                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserDto()));
             }
         }).defaultIfEmpty(ResponseEntity.badRequest().body(new UserDto()));
     }
