@@ -42,4 +42,12 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
 
     @Query("SELECT COUNT(*) FROM post")
     Mono<Long> countPosts();
+
+    @Query("SELECT * FROM post WHERE author_id IN (SELECT following_id FROM user_user WHERE follower_id = " +
+            "(SELECT id FROM usr WHERE email = :email)) ORDER BY creation_timestamp LIMIT :limit OFFSET :skip")
+    Flux<Post> getFollowingPosts(String email, Integer skip, Integer limit);
+
+    @Query("SELECT COUNT(*) FROM post WHERE author_id IN (SELECT following_id FROM user_user WHERE follower_id = " +
+            "(SELECT id FROM usr WHERE email = :email))")
+    Mono<Long> countFollowingPosts(String email);
 }
