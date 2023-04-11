@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.domain.User;
 import ru.mirea.kotiki.domain.UserRole;
+import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
 import java.sql.Timestamp;
@@ -47,5 +48,12 @@ public class UserDetailsService implements ReactiveUserDetailsService {
             }
             return Mono.empty();
         });
+    }
+
+    public Mono<UserDto> supplementInfo(UserDto dto) {
+        return userRepo.getFollowingCountById(dto.getId())
+                .flatMap(c -> Mono.just(dto.setFollowingCount(c)))
+                .flatMap(u -> userRepo.getFollowersCountById(u.getId())
+                        .map(u::setFollowersCount));
     }
 }

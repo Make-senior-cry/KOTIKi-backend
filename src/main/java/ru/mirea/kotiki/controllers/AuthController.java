@@ -44,6 +44,7 @@ public class AuthController {
                 .flatMap(u -> userDetailsService.register(user))
                 .doOnNext(u -> jwtUtil.setCookies(swe.getResponse(), u))
                 .flatMap(u -> Mono.just(new UserDto(u)))
+                .flatMap(userDetailsService::supplementInfo)
                 .flatMap(u -> Mono.just(ResponseEntity.ok(u)))
                 .defaultIfEmpty(ResponseEntity.badRequest().body(new UserDto()));
     }
