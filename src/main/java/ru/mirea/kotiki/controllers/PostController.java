@@ -7,9 +7,11 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import ru.mirea.kotiki.dto.FeedDto;
 import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
+import ru.mirea.kotiki.utils.FeedType;
 
 import java.util.Map;
 
@@ -75,5 +77,19 @@ public class PostController {
                     else
                         return Mono.just(ResponseEntity.badRequest().build());
                 });
+    }
+
+    @GetMapping("/feed")
+    public Mono<ResponseEntity<FeedDto>> getFeed(ServerWebExchange swe,
+                                                 @RequestParam("type") FeedType type,
+                                                 Integer skip, Integer limit) {
+        if (type == FeedType.NEW) {
+            return postService.getNewPosts(skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+        } else if (type == FeedType.FOLLOWING) {
+            String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+            return postService.getFollowingPosts(email, skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+        } else {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
     }
 }
