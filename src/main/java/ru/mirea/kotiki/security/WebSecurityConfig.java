@@ -41,6 +41,8 @@ public class WebSecurityConfig {
             // Auth endpoints
             "/auth/sign-in",
             "/auth/sign-up",
+            // Feed endpoint
+            "/feed",
             // Static content
             "/static/**"
     };
