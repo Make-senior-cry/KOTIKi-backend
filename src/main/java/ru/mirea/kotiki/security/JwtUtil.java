@@ -131,4 +131,8 @@ public class JwtUtil {
                     .map(HttpCookie::getValue).findFirst().get();
         }
     }
+
+    public String extractSubject(ServerWebExchange swe) {
+        return getClaimsFromAccessToken(extractAccessToken(swe)).getSubject();
+    }
 }

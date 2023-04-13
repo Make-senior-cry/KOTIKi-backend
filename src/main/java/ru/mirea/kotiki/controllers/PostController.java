@@ -33,13 +33,12 @@ public class PostController {
     public Mono<ResponseEntity<Object>> createPost(ServerWebExchange swe,
                                                    @RequestPart(required = false) String text,
                                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return imageFile.flatMap(i -> savePost(text, imageFile, email))
+        return imageFile.flatMap(i -> savePost(text, imageFile, jwtUtil.extractSubject(swe)))
                 .switchIfEmpty(Mono.defer(() -> {
                     if (text == null) {
                         return Mono.just(ResponseEntity.badRequest().build());
                     }
-                    return savePost(text, imageFile, email);
+                    return savePost(text, imageFile, jwtUtil.extractSubject(swe));
                 }));
     }
 
@@ -57,8 +56,7 @@ public class PostController {
 
     @PostMapping("/post/like")
     public Mono<ResponseEntity<Object>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return postService.likePost(email, body.get("postId"))
+        return postService.likePost(jwtUtil.extractSubject(swe), body.get("postId"))
                 .flatMap(c -> Mono.just(ResponseEntity.ok(Map.of("likesCount", c))));
     }
 
@@ -70,8 +68,7 @@ public class PostController {
 
     @PostMapping("/post/report")
     public Mono<ResponseEntity<Object>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return postService.reportPost(email, body.get("postId"))
+        return postService.reportPost(jwtUtil.extractSubject(swe), body.get("postId"))
                 .flatMap(flag -> {
                     if (flag)
                         return Mono.just(ResponseEntity.ok().build());
@@ -88,8 +85,8 @@ public class PostController {
         if (SecurityContextHolder.getContext().getAuthentication() == null || type == FeedType.NEW) {
             return postService.getNewPosts(skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
         } else if (type == FeedType.FOLLOWING) {
-            String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-            return postService.getFollowingPosts(email, skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+            return postService.getFollowingPosts(jwtUtil.extractSubject(swe), skip, limit)
+                    .flatMap(r -> Mono.just(ResponseEntity.ok(r)));
         } else {
             return Mono.just(ResponseEntity.badRequest().build());
         }
