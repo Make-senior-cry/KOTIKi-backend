@@ -11,6 +11,7 @@ import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserService;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -29,29 +30,31 @@ public class UserController {
     }
 
     @GetMapping
-    public Mono<UserDto> getUser(ServerWebExchange swe, @RequestParam Optional<Long> id){
+    public Mono<UserDto> getUser(ServerWebExchange swe, @RequestParam Optional<Long> id) {
         if (id.isPresent()) {
             return userService.getUser(id.get());
         } else {
-            String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
+            String email = jwtUtil.extractSubject(swe);
             return userService.getUser(email);
         }
     }
 
     @PutMapping
     public Mono<ResponseEntity<UserDto>> updateUser(ServerWebExchange swe,
-                                           @RequestPart(required = false) String name,
-                                           @RequestPart(required = false) String description,
-                                           @RequestPart(required = false) Mono<FilePart> imageFile) {
-        return userService.updateUser(jwtUtil
-                        .getClaimsFromAccessToken(swe
-                                .getRequest()
-                                .getCookies()
-                                .getFirst("access-token")
-                                .getValue())
-                        .getSubject()
-                ,name,description, imageFile)
+                                                    @RequestPart(required = false) String name,
+                                                    @RequestPart(required = false) String description,
+                                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
+        return userService.updateUser(jwtUtil.extractSubject(swe), name, description, imageFile)
                 .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
+
+    @PostMapping("/follow")
+    public Mono<ResponseEntity<UserDto>> followUser(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+        return userService.followUser(jwtUtil.extractSubject(swe), body.get("followingId"))
+                .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+    }
+
+
 }

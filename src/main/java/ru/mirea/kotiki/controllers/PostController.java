@@ -4,12 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import ru.mirea.kotiki.dto.FeedDto;
 import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
+import ru.mirea.kotiki.utils.FeedType;
 
 import java.util.Map;
 
@@ -30,13 +33,12 @@ public class PostController {
     public Mono<ResponseEntity<Object>> createPost(ServerWebExchange swe,
                                                    @RequestPart(required = false) String text,
                                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return imageFile.flatMap(i -> savePost(text, imageFile, email))
+        return imageFile.flatMap(i -> savePost(text, imageFile, jwtUtil.extractSubject(swe)))
                 .switchIfEmpty(Mono.defer(() -> {
                     if (text == null) {
                         return Mono.just(ResponseEntity.badRequest().build());
                     }
-                    return savePost(text, imageFile, email);
+                    return savePost(text, imageFile, jwtUtil.extractSubject(swe));
                 }));
     }
 
@@ -54,8 +56,7 @@ public class PostController {
 
     @PostMapping("/post/like")
     public Mono<ResponseEntity<Object>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return postService.likePost(email, body.get("postId"))
+        return postService.likePost(jwtUtil.extractSubject(swe), body.get("postId"))
                 .flatMap(c -> Mono.just(ResponseEntity.ok(Map.of("likesCount", c))));
     }
 
@@ -67,13 +68,27 @@ public class PostController {
 
     @PostMapping("/post/report")
     public Mono<ResponseEntity<Object>> reportPost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
-        String email = jwtUtil.getClaimsFromAccessToken(jwtUtil.extractAccessToken(swe)).getSubject();
-        return postService.reportPost(email, body.get("postId"))
+        return postService.reportPost(jwtUtil.extractSubject(swe), body.get("postId"))
                 .flatMap(flag -> {
                     if (flag)
                         return Mono.just(ResponseEntity.ok().build());
                     else
                         return Mono.just(ResponseEntity.badRequest().build());
                 });
+    }
+
+    @GetMapping("/feed")
+    public Mono<ResponseEntity<FeedDto>> getFeed(ServerWebExchange swe,
+                                                 @RequestParam(value = "type") FeedType type,
+                                                 @RequestParam Integer skip,
+                                                 @RequestParam Integer limit) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null || type == FeedType.NEW) {
+            return postService.getNewPosts(skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+        } else if (type == FeedType.FOLLOWING) {
+            return postService.getFollowingPosts(jwtUtil.extractSubject(swe), skip, limit)
+                    .flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+        } else {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
     }
 }
