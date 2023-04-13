@@ -1,3 +1,33 @@
-FROM openjdk:17-alpine
-ADD build/libs/kotiki-0.0.1-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM gradle:7.6-jdk17-alpine AS build
+ARG DATABASE_URL
+ARG JWT_ACCESS_TOKEN_SECRET
+ARG JWT_REFRESH_TOKEN_SECRET
+ARG PGDATABASE
+ARG PGHOST
+ARG PGPASSWORD
+ARG PGPORT
+ARG PGUSER
+ARG SERVER_ADDRESS
+ARG PROJECT_PATH
+ARG DOMAIN
+ADD . /kotiki
+WORKDIR /kotiki
+RUN gradle build -x test
+ENTRYPOINT ["gradle", "bootRun"]
+
+
+#FROM openjdk:17-alpine
+#RUN mkdir /app
+#COPY --from=build /home/gradle/src/build/libs/*.jar /app/kotiki.jar
+#EXPOSE 8080
+#ARG DATABASE_URL
+#ARG JWT_ACCESS_TOKEN_SECRET
+#ARG JWT_REFRESH_TOKEN_SECRET
+#ARG PGDATABASE
+#ARG PGHOST
+#ARG PGPASSWORD
+#ARG PGPORT
+#ARG PGUSER
+#ARG SERVER_ADDRESS
+#RUN export PROJECT_PATH=$(pwd)
+#ENTRYPOINT ["gradle run"]

@@ -21,8 +21,8 @@ import java.util.Date;
 @Slf4j
 public class PostService {
 
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${domain}")
+    private String domain;
 
     @Value("${post.images.path}")
     private String path;
@@ -46,7 +46,7 @@ public class PostService {
                             .build()))
                     .flatMap(p -> imageFile.flatMap(i -> {
                         i.transferTo(Paths.get(path).resolve(i.filename())).subscribe();
-                        return Mono.just(p.setImagePath(serverAddress + "/static/images/post/upload/" + i.filename()));
+                        return Mono.just(p.setImagePath(domain + "/static/images/post/upload/" + i.filename()));
                     }).switchIfEmpty(Mono.just(p)))
                     .flatMap(postRepo::save)
                     .subscribe();

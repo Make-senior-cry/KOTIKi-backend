@@ -92,7 +92,8 @@ public class WebSecurityConfig {
         return new WebFluxConfigurerComposite() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5173")
+                registry.addMapping("/**")
+                        .allowedOrigins("http://127.0.0.1:5173", "http://localhost:5173", "https://kotiki-nine.vercel.app/")
                         .allowedMethods("GET", "POST", "PUT").allowCredentials(true);
             }
         };
