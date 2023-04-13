@@ -27,4 +27,13 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
 
     @Query("SELECT id FROM usr WHERE email = :email")
     Mono<Long> getIdByEmail(String email);
+
+    @Query("SELECT EXISTS(SELECT * FROM user_user WHERE follower_id = :followerId AND following_id = :followingId)")
+    Mono<Boolean> existsFollowByFollowerIdAndFollowingId(Long followerId, Long followingId);
+
+    @Query("DELETE FROM user_user WHERE follower_id = :followerId AND following_id = :followingId")
+    Mono<Void> deleteFollowByFollowerIdAndFollowingId(Long followerId, Long followingId);
+
+    @Query("INSERT INTO user_user(follower_id, following_id) VALUES(:followerId, :followingId)")
+    Mono<Void> saveFollow(Long followerId, Long followingId);
 }

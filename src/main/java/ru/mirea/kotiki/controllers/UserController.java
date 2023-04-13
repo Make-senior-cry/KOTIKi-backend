@@ -11,6 +11,7 @@ import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.UserService;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -51,6 +52,19 @@ public class UserController {
                                 .getValue())
                         .getSubject()
                 ,name,description, imageFile)
+                .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+    }
+
+    @PostMapping("/follow")
+    public Mono<ResponseEntity<UserDto>> followUser(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+        return userService.followUser(jwtUtil
+                .getClaimsFromAccessToken(swe
+                        .getRequest()
+                        .getCookies()
+                        .getFirst("access-token")
+                        .getValue())
+                .getSubject(), body.get("followingId"))
                 .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }

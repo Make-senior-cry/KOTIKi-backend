@@ -78,4 +78,28 @@ public class UserService {
     public Mono<Boolean> getNext(String name, Integer skip, Integer limit) {
         return userRepo.countUsersByName(name).flatMap(c -> Mono.just( skip + limit < c));
     }
+
+    public Mono<UserDto> followUser(String email, Long followingId) {
+        return userRepo.getIdByEmail(email)
+                .flatMap(id ->
+                        userRepo.existsFollowByFollowerIdAndFollowingId(id, followingId)
+                                .flatMap(exists -> {
+                                    if (exists)
+                                        return userRepo.deleteFollowByFollowerIdAndFollowingId(id, followingId);
+                                    else
+                                        return userRepo.saveFollow(id, followingId);
+                                })
+                                .then(userRepo.findById(id))
+                )
+                .map(UserDto::new)
+                .flatMap(u -> setRelationsCount(Mono.just(u)));
+    }
+
+    private Mono<UserDto> setRelationsCount(Mono<UserDto> user) {
+        return user
+                .flatMap(u -> userRepo.getFollowingCountById(u.getId())
+                        .map(u::setFollowingCount))
+                .flatMap(u -> userRepo.getFollowersCountById(u.getId())
+                        .map(u::setFollowersCount));
+    }
 }
