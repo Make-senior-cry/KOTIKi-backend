@@ -34,20 +34,14 @@ public class UserService {
         return userRepo.findById(id)
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
-                .flatMap(dto -> userRepo.getFollowingCountById(id)
-                        .map(dto::setFollowingCount))
-                .flatMap(dto -> userRepo.getFollowersCountById(id)
-                        .map(dto::setFollowersCount));
+                .flatMap(u -> setRelationsCount(Mono.just(u)));
     }
 
     public Mono<UserDto> getUser(String email) {
         return userRepo.findByEmail(email)
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
-                .flatMap(dto -> userRepo.getFollowingCountById(dto.getId())
-                        .map(dto::setFollowingCount))
-                .flatMap(dto -> userRepo.getFollowersCountById(dto.getId())
-                        .map(dto::setFollowersCount));
+                .flatMap(u -> setRelationsCount(Mono.just(u)));
     }
 
 

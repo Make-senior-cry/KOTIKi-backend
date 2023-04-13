@@ -91,13 +91,13 @@ public class PostService {
 
     public Mono<Integer> likePost(String email, Long postId) {
         return userRepo.getIdByEmail(email)
-                .flatMap(ui ->
-                        postRepo.existsLikeByPostIdAndUserId(postId, ui)
+                .flatMap(id ->
+                        postRepo.existsLikeByPostIdAndUserId(postId, id)
                                 .flatMap(exists -> {
                                     if (exists)
-                                        return postRepo.deleteLikeByPostIdAndUserId(postId, ui);
+                                        return postRepo.deleteLikeByPostIdAndUserId(postId, id);
                                     else
-                                        return postRepo.saveLike(postId, ui);
+                                        return postRepo.saveLike(postId, id);
                                 })
                                 .then(postRepo.countLikesByPostId(postId))
                 );
