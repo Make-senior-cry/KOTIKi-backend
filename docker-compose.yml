@@ -39,6 +39,17 @@ services:
       - FLYWAY_URL=jdbc:postgresql://db:5432/kotiki
       - FLYWAY_SCHEMAS=public
 
+  redis:
+    image: redis:7
+
+    restart: always
+
+    ports:
+      - '6379:6379'
+
+
 volumes:
   db:
+    driver: local
+  redis:
     driver: local

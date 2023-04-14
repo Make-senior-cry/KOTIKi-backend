@@ -19,8 +19,8 @@ import java.util.Date;
 @Slf4j
 public class PostService {
 
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${domain}")
+    private String domain;
 
     @Value("${post.images.path}")
     private String path;

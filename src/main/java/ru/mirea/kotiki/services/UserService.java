@@ -16,8 +16,8 @@ import java.util.List;
 @Slf4j
 public class UserService {
 
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${domain}")
+    private String domain;
 
     @Value("${user.images.path}")
     private String path;
@@ -52,7 +52,7 @@ public class UserService {
                 .flatMap(u -> Mono.just(u.setDescription(description)))
                 .flatMap(u -> image.flatMap(fp -> {
                     fp.transferTo(Paths.get(path).resolve(fp.filename())).subscribe();
-                    return Mono.just(u.setImagePath(serverAddress + "/static/images/user/upload/" + fp.filename()));
+                    return Mono.just(u.setImagePath(domain + "/static/images/user/upload/" + fp.filename()));
                 }))
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));

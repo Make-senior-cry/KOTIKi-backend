@@ -20,8 +20,8 @@ import java.util.Date;
 @Slf4j
 public class UserDetailsService implements ReactiveUserDetailsService {
 
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${domain}")
+    private String domain;
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -41,7 +41,7 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
-        user.setImagePath(serverAddress + "/static/images/user/default/default.jpg");
+        user.setImagePath(domain + "/static/images/user/default/default.jpg");
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
             if (!exists) {
                 return userRepo.save(user);

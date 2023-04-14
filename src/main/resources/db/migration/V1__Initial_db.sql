@@ -64,11 +64,12 @@ create table chat_message
 (
     id bigserial primary key,
     text varchar(1024) not null,
-    chat_id bigint not null,
     send_timestamp timestamp not null,
-    user_id bigint not null,
-    foreign key (chat_id) references chat_room(id),
-    foreign key (user_id) references usr(id)
+    sender_id bigint not null,
+    receiver_id bigint not null,
+    checked bool default false,
+    foreign key (sender_id) references usr(id),
+    foreign key (receiver_id) references usr(id)
 );
 
 create table post_like

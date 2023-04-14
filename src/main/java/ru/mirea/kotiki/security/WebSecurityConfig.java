@@ -44,7 +44,9 @@ public class WebSecurityConfig {
             // Feed endpoint
             "/feed",
             // Static content
-            "/static/**"
+            "/static/**",
+            // Health check
+            "/healthcheck"
     };
 
     private final ReactiveAuthenticationManager authenticationManager;
