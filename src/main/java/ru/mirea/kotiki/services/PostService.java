@@ -43,7 +43,7 @@ public class PostService {
                         .build()))
                 .flatMap(p -> imageFile.flatMap(i -> {
                     i.transferTo(Paths.get(path).resolve(i.filename())).subscribe();
-                    return Mono.just(p.setImagePath(serverAddress + "/static/images/post/upload/" + i.filename()));
+                    return Mono.just(p.setImagePath(domain + "/static/images/post/upload/" + i.filename()));
                 }).switchIfEmpty(Mono.just(p)))
                 .flatMap(postRepo::save)
                 .subscribe();
