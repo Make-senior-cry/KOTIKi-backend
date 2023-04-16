@@ -26,7 +26,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        log.info("Auth manager started");
+        //log.info("Auth manager started");
         String accessToken = authentication.getCredentials().toString();
         String refreshToken = authentication.getPrincipal().toString();
 

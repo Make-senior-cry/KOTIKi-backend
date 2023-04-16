@@ -44,6 +44,7 @@ public class UserController {
                                                     @RequestPart(required = false) String name,
                                                     @RequestPart(required = false) String description,
                                                     @RequestPart(required = false) Mono<FilePart> imageFile) {
+        log.info("handling user update");
         return userService.updateUser(jwtUtil.extractSubject(swe), name, description, imageFile)
                 .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
