@@ -44,7 +44,7 @@ public class UserService {
                 .flatMap(u -> setRelationsCount(Mono.just(u)));
     }
 
-
+    /*
     public Mono<UserDto> updateUser(String email, String name, String description, Mono<FilePart> image) {
         log.info(email);
         return userRepo.findByEmail(email)
@@ -61,6 +61,15 @@ public class UserService {
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));
 
+    }
+     */
+
+    public Mono<UserDto> updateUser(String email, String name, String description) {
+        log.info("updating user:" + email);
+        return userRepo.findByEmail(email)
+                .flatMap(u -> Mono.just(u.setName(name).setDescription(description)))
+                .flatMap(userRepo::save)
+                .flatMap(u -> getUser(u.getId()));
     }
 
     public Mono<List<UserDto>> searchUsers(String name, Integer skip, Integer limit) {

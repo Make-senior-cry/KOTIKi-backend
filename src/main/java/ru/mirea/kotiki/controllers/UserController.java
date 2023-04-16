@@ -42,10 +42,9 @@ public class UserController {
     @PutMapping
     public Mono<ResponseEntity<UserDto>> updateUser(ServerWebExchange swe,
                                                     @RequestPart(required = false) String name,
-                                                    @RequestPart(required = false) String description,
-                                                    @RequestPart(required = false) Mono<FilePart> imageFile) {
+                                                    @RequestPart(required = false) String description) {
         log.info("handling user update");
-        return userService.updateUser(jwtUtil.extractSubject(swe), name, description, imageFile)
+        return userService.updateUser(jwtUtil.extractSubject(swe), name, description)
                 .flatMap(dto -> Mono.just(ResponseEntity.ok(dto)))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
