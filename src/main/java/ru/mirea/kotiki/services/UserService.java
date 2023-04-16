@@ -53,7 +53,9 @@ public class UserService {
                 .flatMap(u -> image.flatMap(fp -> {
                     log.debug(String.valueOf(Paths.get(path).resolve(fp.filename())));
                     return fp.transferTo(Paths.get(path).resolve(fp.filename()))
-                            .then(Mono.just(u.setImagePath(domain + "/static/images/user/upload/" + fp.filename())));
+                            .then(Mono.just(u.setImagePath(domain
+                                    + "/static/images/user/upload/"
+                                    + fp.filename().replace("\n",""))));
                     //return Mono.just(u.setImagePath(domain + "/static/images/user/upload/" + fp.filename()));
                 }))
                 .flatMap(userRepo::save)
