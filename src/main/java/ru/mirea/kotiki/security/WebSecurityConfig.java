@@ -23,8 +23,11 @@ import reactor.core.publisher.Mono;
 @EnableReactiveMethodSecurity
 public class WebSecurityConfig {
 
-    @Value("${frontend.url}")
-    private String frontendUrl;
+    @Value("${frontend.remote.url}")
+    private String frontendRemoteUrl;
+
+    @Value("${frontend.local.url}")
+    private String frontendLocalUrl;
 
     private static final String[] AUTH_WHITELIST = {
             // Swagger endpoints
@@ -99,7 +102,7 @@ public class WebSecurityConfig {
         return new WebFluxConfigurerComposite() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins(frontendUrl)
+                registry.addMapping("/**").allowedOrigins(frontendRemoteUrl, frontendLocalUrl)
                         .allowedMethods("GET", "POST", "PUT").allowCredentials(true);
             }
         };
