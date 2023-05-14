@@ -3,7 +3,6 @@ package ru.mirea.kotiki.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -56,5 +55,10 @@ public class UserController {
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-
+    @GetMapping("/following")
+    public Mono<ResponseEntity<Map<String, Boolean>>> checkFollowing(ServerWebExchange swe, @RequestParam Long id) {
+        return userService.checkFollowing(jwtUtil.extractSubject(swe), id)
+                .flatMap(f -> Mono.just(ResponseEntity.ok().body(Map.of("isFollower", f))))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+    }
 }

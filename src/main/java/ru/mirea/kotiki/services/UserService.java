@@ -3,13 +3,11 @@ package ru.mirea.kotiki.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
-import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -108,5 +106,10 @@ public class UserService {
                         .map(u::setFollowingCount))
                 .flatMap(u -> userRepo.getFollowersCountById(u.getId())
                         .map(u::setFollowersCount));
+    }
+
+    public Mono<Boolean> checkFollowing(String email, Long followingId) {
+        return userRepo.getIdByEmail(email)
+                        .flatMap(id -> userRepo.existsFollowByFollowerIdAndFollowingId(id, followingId));
     }
 }
