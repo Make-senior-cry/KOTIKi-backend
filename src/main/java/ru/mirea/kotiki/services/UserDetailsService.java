@@ -43,8 +43,7 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
         Random random = new Random();
-        user.setImagePath(domain
-                + "/static/images/user/default/default"
+        user.setImagePath("/static/images/user/default/default"
                 + String.valueOf(random.nextInt(1, 4))
                 + ".jpg");
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
