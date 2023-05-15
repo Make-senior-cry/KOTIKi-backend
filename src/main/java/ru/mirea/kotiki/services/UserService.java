@@ -94,7 +94,7 @@ public class UserService {
                                     else
                                         return userRepo.saveFollow(id, followingId);
                                 })
-                                .then(userRepo.findById(id))
+                                .then(userRepo.findById(followingId))
                 )
                 .map(UserDto::new)
                 .flatMap(u -> setAdditionalInfo(Mono.just(u)));
