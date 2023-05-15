@@ -15,6 +15,7 @@ import ru.mirea.kotiki.repositories.UserRepository;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Random;
 
 @Service
 @Slf4j
@@ -41,7 +42,11 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationTimestamp(new Timestamp(new Date().getTime()));
-        user.setImagePath(domain + "/static/images/user/default/default.jpg");
+        Random random = new Random();
+        user.setImagePath(domain
+                + "/static/images/user/default/default"
+                + String.valueOf(random.nextInt(1, 4))
+                + ".jpg");
         return userRepo.existsByEmail(user.getEmail()).flatMap(exists -> {
             if (!exists) {
                 return userRepo.save(user);
