@@ -25,8 +25,8 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     @Query("SELECT COUNT(*) FROM post WHERE author_id = :id")
     Mono<Integer> getPostsCountById(Long id);
 
-    @Query("SELECT * FROM usr WHERE name ILIKE CONCAT('%', :name, '%') LIMIT :limit OFFSET :skip")
-    Flux<User> searchUsersByName(String name, Integer skip, Integer limit);
+    @Query("SELECT * FROM usr WHERE name ILIKE CONCAT('%', :name, '%') AND email != :email LIMIT :limit OFFSET :skip")
+    Flux<User> searchUsersByName(String email, String name, Integer skip, Integer limit);
 
     Mono<Integer> countUsersByName(String name);
 

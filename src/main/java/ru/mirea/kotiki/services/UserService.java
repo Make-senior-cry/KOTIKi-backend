@@ -57,8 +57,8 @@ public class UserService {
                 .flatMap(u -> getUser(u.getId()));
     }
 
-    public Mono<List<UserDto>> searchUsers(String name, Integer skip, Integer limit) {
-        return userRepo.searchUsersByName(name, skip, limit)
+    public Mono<List<UserDto>> searchUsers(String email, String name, Integer skip, Integer limit) {
+        return userRepo.searchUsersByName(email, name, skip, limit)
                 .map(UserDto::new)
                 .doOnNext(u -> userRepo.getFollowingCountById(u.getId())
                         .map(u::setFollowingCount).subscribe())
