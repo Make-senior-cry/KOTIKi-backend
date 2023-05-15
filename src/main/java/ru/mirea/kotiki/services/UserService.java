@@ -51,19 +51,11 @@ public class UserService {
                 .flatMap(u -> Mono.just(u.setDescription(description)))
                 .flatMap(u -> image.flatMap(fp -> {
                     fp.transferTo(Paths.get(path).resolve(fp.filename())).subscribe();
-                    return Mono.just(u.setImagePath(domain + "/static/images/user/upload/" + fp.filename()));
+                    return Mono.just(u.setImagePath("/static/images/user/upload/" + fp.filename()));
                 }))
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));
     }
-
-    /*public Mono<UserDto> updateUser(String email, String name, String description) {
-        log.info("updating user:" + email);
-        return userRepo.findByEmail(email)
-                .flatMap(u -> Mono.just(u.setName(name).setDescription(description)))
-                .flatMap(userRepo::save)
-                .flatMap(u -> getUser(u.getId()));
-    }*/
 
     public Mono<List<UserDto>> searchUsers(String name, Integer skip, Integer limit) {
         return userRepo.searchUsersByName(name, skip, limit)
