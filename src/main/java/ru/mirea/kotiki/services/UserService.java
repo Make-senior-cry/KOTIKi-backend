@@ -3,11 +3,13 @@ package ru.mirea.kotiki.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.UserDto;
 import ru.mirea.kotiki.repositories.UserRepository;
 
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -42,30 +44,15 @@ public class UserService {
                 .flatMap(u -> setAdditionalInfo(Mono.just(u)));
     }
 
-    /*
+
     public Mono<UserDto> updateUser(String email, String name, String description, Mono<FilePart> image) {
-        log.info(email);
         return userRepo.findByEmail(email)
                 .flatMap(u -> Mono.just(u.setName(name)))
                 .flatMap(u -> Mono.just(u.setDescription(description)))
                 .flatMap(u -> image.flatMap(fp -> {
-                    log.debug(String.valueOf(Paths.get(path).resolve(fp.filename())));
-                    return fp.transferTo(Paths.get(path).resolve(fp.filename()))
-                            .then(Mono.just(u.setImagePath(domain
-                                    + "/static/images/user/upload/"
-                                    + fp.filename().replace("\n",""))));
-                    //return Mono.just(u.setImagePath(domain + "/static/images/user/upload/" + fp.filename()));
+                    fp.transferTo(Paths.get(path).resolve(fp.filename())).subscribe();
+                    return Mono.just(u.setImagePath("/static/images/user/upload/" + fp.filename()));
                 }))
-                .flatMap(userRepo::save)
-                .flatMap(u -> getUser(u.getId()));
-
-    }
-     */
-
-    public Mono<UserDto> updateUser(String email, String name, String description) {
-        log.info("updating user:" + email);
-        return userRepo.findByEmail(email)
-                .flatMap(u -> Mono.just(u.setName(name).setDescription(description)))
                 .flatMap(userRepo::save)
                 .flatMap(u -> getUser(u.getId()));
     }
