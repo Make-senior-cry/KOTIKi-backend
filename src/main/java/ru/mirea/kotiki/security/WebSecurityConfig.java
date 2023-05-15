@@ -84,6 +84,7 @@ public class WebSecurityConfig {
                                 )
                 )
                 .and()
+                .cors().and()
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
@@ -91,6 +92,7 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(AUTH_WHITELIST).permitAll()
+                .pathMatchers("/**").authenticated()
                 .pathMatchers("/post/ban").hasRole("ADMIN")
                 .anyExchange().authenticated()
                 .and()
@@ -103,7 +105,7 @@ public class WebSecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**").allowedOrigins(frontendRemoteUrl, frontendLocalUrl)
-                        .allowedMethods("GET", "POST", "PUT").allowCredentials(true);
+                        .allowedMethods("OPTIONS", "GET", "POST", "PUT").allowCredentials(true).allowedHeaders("*");
             }
         };
     }
