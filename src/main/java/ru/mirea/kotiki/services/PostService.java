@@ -85,7 +85,7 @@ public class PostService {
     private Mono<UserPageDto> setAuthor(Long userId, UserPageDto userPage) {
         return userRepo.findById(userId)
                 .map(UserDto::new)
-                .flatMap(u -> setRelationsCount(Mono.just(u)))
+                .flatMap(u -> setAdditionalInfo(Mono.just(u)))
                 .map(userPage::setAuthor);
     }
 
@@ -145,7 +145,7 @@ public class PostService {
     private Mono<PostDto> setAuthor(Post post) {
         return userRepo.findById(post.getAuthorId())
                 .map(UserDto::new)
-                .flatMap(u -> setRelationsCount(Mono.just(u)))
+                .flatMap(u -> setAdditionalInfo(Mono.just(u)))
                 .flatMap(u ->
                         Mono.just(PostDto.builder()
                                 .author(u)
@@ -162,11 +162,13 @@ public class PostService {
                         .flatMap(c -> Mono.just(p.setReportsCount(c))));
     }
 
-    private Mono<UserDto> setRelationsCount(Mono<UserDto> user) {
+    private Mono<UserDto> setAdditionalInfo(Mono<UserDto> user) {
         return user
                 .flatMap(u -> userRepo.getFollowingCountById(u.getId())
                         .map(u::setFollowingCount))
                 .flatMap(u -> userRepo.getFollowersCountById(u.getId())
-                        .map(u::setFollowersCount));
+                        .map(u::setFollowersCount))
+                .flatMap(u -> userRepo.getPostsCountById(u.getId())
+                        .map(u::setPostsCount));
     }
 }

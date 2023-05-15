@@ -20,6 +20,7 @@ public class UserDto {
     private UserRole role;
     private Integer followersCount;
     private Integer followingCount;
+    private Integer postsCount;
 
     public UserDto(User user) {
         this.id = user.getId();

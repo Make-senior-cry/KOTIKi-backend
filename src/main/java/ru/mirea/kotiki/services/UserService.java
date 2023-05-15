@@ -32,14 +32,14 @@ public class UserService {
         return userRepo.findById(id)
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
-                .flatMap(u -> setRelationsCount(Mono.just(u)));
+                .flatMap(u -> setAdditionalInfo(Mono.just(u)));
     }
 
     public Mono<UserDto> getUser(String email) {
         return userRepo.findByEmail(email)
                 .switchIfEmpty(Mono.error(new Exception()))
                 .map(UserDto::new)
-                .flatMap(u -> setRelationsCount(Mono.just(u)));
+                .flatMap(u -> setAdditionalInfo(Mono.just(u)));
     }
 
     /*
@@ -97,15 +97,17 @@ public class UserService {
                                 .then(userRepo.findById(id))
                 )
                 .map(UserDto::new)
-                .flatMap(u -> setRelationsCount(Mono.just(u)));
+                .flatMap(u -> setAdditionalInfo(Mono.just(u)));
     }
 
-    private Mono<UserDto> setRelationsCount(Mono<UserDto> user) {
+    private Mono<UserDto> setAdditionalInfo(Mono<UserDto> user) {
         return user
                 .flatMap(u -> userRepo.getFollowingCountById(u.getId())
                         .map(u::setFollowingCount))
                 .flatMap(u -> userRepo.getFollowersCountById(u.getId())
-                        .map(u::setFollowersCount));
+                        .map(u::setFollowersCount))
+                .flatMap(u -> userRepo.getPostsCountById(u.getId())
+                        .map(u::setPostsCount));
     }
 
     public Mono<Boolean> checkFollowing(String email, Long followingId) {

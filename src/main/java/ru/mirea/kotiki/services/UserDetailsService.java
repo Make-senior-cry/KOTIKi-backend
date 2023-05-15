@@ -54,6 +54,8 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         return userRepo.getFollowingCountById(dto.getId())
                 .flatMap(c -> Mono.just(dto.setFollowingCount(c)))
                 .flatMap(u -> userRepo.getFollowersCountById(u.getId())
-                        .map(u::setFollowersCount));
+                        .map(u::setFollowersCount))
+                .flatMap(u -> userRepo.getPostsCountById(u.getId())
+                        .map(u::setPostsCount));
     }
 }
