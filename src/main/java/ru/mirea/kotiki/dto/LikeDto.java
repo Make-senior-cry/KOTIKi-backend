@@ -7,5 +7,5 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class LikeDto {
     private Integer likesCount;
-    private Boolean isLiked;
+    private Boolean liked;
 }

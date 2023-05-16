@@ -15,6 +15,7 @@ public class PostDto {
     private String imageUrl;
     private Date createdAt;
     private Boolean banned;
+    private Boolean liked;
     private Integer likesCount;
     private Integer reportsCount;
     private UserDto author;

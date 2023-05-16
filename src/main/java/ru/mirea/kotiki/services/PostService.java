@@ -50,7 +50,7 @@ public class PostService {
     }
 
     public Mono<UserPageDto> loadUserPage(Long userId, Integer limit, Integer skip) {
-        UserPageDto dto = new UserPageDto();
+        var dto = new UserPageDto();
         return setPosts(userId, limit, skip, dto)
                 .flatMap(p -> setAuthor(userId, dto))
                 .flatMap(p -> {
@@ -60,8 +60,7 @@ public class PostService {
                     return Mono.just(p);
                 })
                 .flatMap(p -> postRepo.countPostsByAuthorId(userId)
-                        .flatMap(c -> Mono.just(p.setHasNext(skip + limit < c)))
-                );
+                        .flatMap(c -> Mono.just(p.setHasNext(skip + limit < c))));
     }
 
     private Mono<UserPageDto> setPosts(Long userId, Integer limit, Integer skip, UserPageDto userPage) {
@@ -78,6 +77,8 @@ public class PostService {
                 )
                 .flatMap(p -> postRepo.countReportsByPostId(p.getId())
                         .flatMap(c -> Mono.just(p.setReportsCount(c))))
+                .flatMap(p -> postRepo.checkLikeOfPost(userId, p.getId())
+                        .flatMap(b -> Mono.just(p.setLiked(b))))
                 .collectList()
                 .map(userPage::setPosts);
     }
@@ -108,7 +109,7 @@ public class PostService {
         return postRepo.countLikesByPostId(postId)
                 .flatMap(c -> Mono.just(likeDto.setLikesCount(c)))
                 .flatMap(dto -> postRepo.checkLikeOfPost(id, postId)
-                        .flatMap(b -> Mono.just(dto.setIsLiked(b))));
+                        .flatMap(b -> Mono.just(dto.setLiked(b))));
     }
 
     public Mono<Void> banPost(Long postId) {
@@ -130,9 +131,12 @@ public class PostService {
     public Mono<FeedDto> getFollowingPosts(String email, Integer skip, Integer limit) {
         return postRepo.getFollowingPosts(email, skip, limit)
                 .flatMap(this::setAuthor)
+                .flatMap(p -> userRepo.getIdByEmail(email)
+                        .flatMap(id -> postRepo.checkLikeOfPost(id, p.getId())
+                                .flatMap(b -> Mono.just(p.setLiked(b)))))
                 .collectList()
                 .flatMap(l -> {
-                    FeedDto dto = new FeedDto();
+                    var dto = new FeedDto();
                     return postRepo.countFollowingPosts(email)
                             .flatMap(c -> Mono.just(dto.setHasNext(c - skip - limit > 0)))
                             .map(d -> d.setSkip(skip).setLimit(limit).setHasPrev(skip != 0).setPosts(l));
@@ -142,6 +146,9 @@ public class PostService {
     public Mono<FeedDto> getNewPosts(String email, Integer skip, Integer limit) {
         return postRepo.getNewPosts(email, skip, limit)
                 .flatMap(this::setAuthor)
+                .flatMap(p -> userRepo.getIdByEmail(email)
+                        .flatMap(id -> postRepo.checkLikeOfPost(id, p.getId()))
+                        .flatMap(b -> Mono.just(p.setLiked(b))))
                 .collectList()
                 .flatMap(l -> {
                     FeedDto dto = new FeedDto();
@@ -167,7 +174,9 @@ public class PostService {
                 .flatMap(p -> postRepo.countLikesByPostId(p.getId())
                         .flatMap(c -> Mono.just(p.setLikesCount(c))))
                 .flatMap(p -> postRepo.countReportsByPostId(p.getId())
-                        .flatMap(c -> Mono.just(p.setReportsCount(c))));
+                        .flatMap(c -> Mono.just(p.setReportsCount(c))))
+                .flatMap(p -> postRepo.checkLikeOfPost(post.getAuthorId(), p.getId())
+                        .flatMap(b -> Mono.just(p.setLiked(b))));
     }
 
     private Mono<UserDto> setAdditionalInfo(Mono<UserDto> user) {

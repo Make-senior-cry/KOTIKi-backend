@@ -15,6 +15,7 @@ public class LightPostDto {
     private String imageUrl;
     private Date createdAt;
     private Boolean banned;
+    private Boolean liked;
     private Integer likesCount;
     private Integer reportsCount;
 }
