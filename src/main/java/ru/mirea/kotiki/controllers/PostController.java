@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -83,8 +82,9 @@ public class PostController {
                                                  @RequestParam(value = "type") FeedType type,
                                                  @RequestParam Integer skip,
                                                  @RequestParam Integer limit) {
-        if (SecurityContextHolder.getContext().getAuthentication() == null || type == FeedType.NEW) {
-            return postService.getNewPosts(skip, limit).flatMap(r -> Mono.just(ResponseEntity.ok(r)));
+        if (type == FeedType.NEW) {
+            return postService.getNewPosts(jwtUtil.extractSubject(swe), skip, limit)
+                    .flatMap(r -> Mono.just(ResponseEntity.ok(r)));
         } else if (type == FeedType.FOLLOWING) {
             return postService.getFollowingPosts(jwtUtil.extractSubject(swe), skip, limit)
                     .flatMap(r -> Mono.just(ResponseEntity.ok(r)));

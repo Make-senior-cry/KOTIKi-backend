@@ -139,8 +139,8 @@ public class PostService {
                 });
     }
 
-    public Mono<FeedDto> getNewPosts(Integer skip, Integer limit) {
-        return postRepo.getNewPosts(skip, limit)
+    public Mono<FeedDto> getNewPosts(String email, Integer skip, Integer limit) {
+        return postRepo.getNewPosts(email, skip, limit)
                 .flatMap(this::setAuthor)
                 .collectList()
                 .flatMap(l -> {
