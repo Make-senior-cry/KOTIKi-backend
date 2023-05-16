@@ -50,4 +50,7 @@ public interface PostRepository extends ReactiveCrudRepository<Post, Long> {
     @Query("SELECT COUNT(*) FROM post WHERE author_id IN (SELECT following_id FROM user_user WHERE follower_id = " +
             "(SELECT id FROM usr WHERE email = :email))")
     Mono<Long> countFollowingPosts(String email);
+
+    @Query("SELECT EXISTS(SELECT * FROM post_like WHERE user_id = :userId AND post_id = :postId)")
+    Mono<Boolean> checkLikeOfPost(Long userId, Long postId);
 }

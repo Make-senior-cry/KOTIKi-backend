@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import ru.mirea.kotiki.dto.FeedDto;
+import ru.mirea.kotiki.dto.LikeDto;
 import ru.mirea.kotiki.dto.UserPageDto;
 import ru.mirea.kotiki.security.JwtUtil;
 import ru.mirea.kotiki.services.PostService;
@@ -55,9 +56,9 @@ public class PostController {
     }
 
     @PostMapping("/post/like")
-    public Mono<ResponseEntity<Object>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
+    public Mono<ResponseEntity<LikeDto>> likePost(ServerWebExchange swe, @RequestBody Map<String, Long> body) {
         return postService.likePost(jwtUtil.extractSubject(swe), body.get("postId"))
-                .flatMap(c -> Mono.just(ResponseEntity.ok(Map.of("likesCount", c))));
+                .flatMap(r -> Mono.just(ResponseEntity.ok(r)));
     }
 
     @PostMapping("/post/ban")

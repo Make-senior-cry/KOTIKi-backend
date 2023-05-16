@@ -89,7 +89,7 @@ public class PostService {
                 .map(userPage::setAuthor);
     }
 
-    public Mono<Integer> likePost(String email, Long postId) {
+    public Mono<LikeDto> likePost(String email, Long postId) {
         return userRepo.getIdByEmail(email)
                 .flatMap(id ->
                         postRepo.existsLikeByPostIdAndUserId(postId, id)
@@ -99,8 +99,16 @@ public class PostService {
                                     else
                                         return postRepo.saveLike(postId, id);
                                 })
-                                .then(postRepo.countLikesByPostId(postId))
+                                .then(buildLikeDto(id, postId))
                 );
+    }
+
+    private Mono<LikeDto> buildLikeDto(Long id, Long postId) {
+        var likeDto = new LikeDto();
+        return postRepo.countLikesByPostId(postId)
+                .flatMap(c -> Mono.just(likeDto.setLikesCount(c)))
+                .flatMap(dto -> postRepo.checkLikeOfPost(id, postId)
+                        .flatMap(b -> Mono.just(dto.setIsLiked(b))));
     }
 
     public Mono<Void> banPost(Long postId) {
