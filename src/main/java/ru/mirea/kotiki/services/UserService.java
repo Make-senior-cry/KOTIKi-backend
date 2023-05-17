@@ -101,4 +101,33 @@ public class UserService {
         return userRepo.getIdByEmail(email)
                         .flatMap(id -> userRepo.existsFollowByFollowerIdAndFollowingId(id, followingId));
     }
+
+//    private String saveImage(Part image) throws FileNotFoundException {
+//        Random random = new Random();
+//        String imgid = String.valueOf(random.nextInt(1, 10000));
+//        String uri = path + "\\" + imgid + ".jpg";
+//        log.info(imgid);
+//        File file = new File(uri);
+//        try {
+//            file.createNewFile();
+//        }catch (Exception e){
+//            throw Exceptions.propagate(e);
+//        }
+//        FileOutputStream fileOutputStream = new FileOutputStream(file, true);
+//        FileChannel fileChannel = fileOutputStream.getChannel();
+//        DataBufferUtils
+//                .write(image.content(), fileChannel)
+//                .publishOn(Schedulers.boundedElastic())
+//                .doFinally(signalType -> {
+//                    image.content().map(DataBufferUtils::release).subscribe();
+//                    try {
+//                        fileChannel.close();
+//                        fileOutputStream.close();
+//                    } catch (IOException e){
+//                        throw Exceptions.propagate(e);
+//                    }
+//                }).subscribe()
+//        ;
+//        return imgid;
+//    }
 }
