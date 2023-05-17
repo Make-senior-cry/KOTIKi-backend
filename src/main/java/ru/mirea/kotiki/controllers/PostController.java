@@ -48,9 +48,11 @@ public class PostController {
     }
 
     @GetMapping("/post")
-    public Mono<ResponseEntity<UserPageDto>> getPosts(@RequestParam("user_id") Long userId, @RequestParam Integer limit,
+    public Mono<ResponseEntity<UserPageDto>> getPosts(ServerWebExchange swe,
+                                                      @RequestParam("user_id") Long userId,
+                                                      @RequestParam Integer limit,
                                                       @RequestParam Integer skip) {
-        return postService.loadUserPage(userId, limit, skip)
+        return postService.loadUserPage(jwtUtil.extractSubject(swe), userId, limit, skip)
                 .flatMap(p -> Mono.just(ResponseEntity.ok(p)));
     }
 

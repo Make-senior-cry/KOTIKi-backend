@@ -49,22 +49,23 @@ public class PostService {
                 .subscribe();
     }
 
-    public Mono<UserPageDto> loadUserPage(Long userId, Integer limit, Integer skip) {
+    public Mono<UserPageDto> loadUserPage(String email, Long authorId, Integer limit, Integer skip) {
         var dto = new UserPageDto();
-        return setPosts(userId, limit, skip, dto)
-                .flatMap(p -> setAuthor(userId, dto))
+        return userRepo.getIdByEmail(email)
+                .flatMap(id -> setPosts(id, authorId, limit, skip, dto))
+                .flatMap(p -> setAuthor(authorId, dto))
                 .flatMap(p -> {
                     p.setLimit(limit)
                             .setSkip(skip)
                             .setHasPrev(skip != 0);
                     return Mono.just(p);
                 })
-                .flatMap(p -> postRepo.countPostsByAuthorId(userId)
+                .flatMap(p -> postRepo.countPostsByAuthorId(authorId)
                         .flatMap(c -> Mono.just(p.setHasNext(skip + limit < c))));
     }
 
-    private Mono<UserPageDto> setPosts(Long userId, Integer limit, Integer skip, UserPageDto userPage) {
-        return postRepo.getPostsByUserId(userId, limit, skip)
+    private Mono<UserPageDto> setPosts(Long userId, Long authorId, Integer limit, Integer skip, UserPageDto userPage) {
+        return postRepo.getPostsByUserId(authorId, limit, skip)
                 .map(p -> LightPostDto.builder()
                         .imageUrl(p.getImagePath())
                         .banned(p.getIsBanned())
