@@ -13,10 +13,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
-import org.springframework.web.reactive.config.CorsRegistry;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
-import org.springframework.web.reactive.config.WebFluxConfigurerComposite;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
 
 @EnableWebFluxSecurity
 @Configuration
@@ -28,7 +30,6 @@ public class WebSecurityConfig {
 
     @Value("${frontend.local.url}")
     private String frontendLocalUrl;
-
     private static final String[] AUTH_WHITELIST = {
             // Swagger endpoints
             "/v2/api-docs",
@@ -70,6 +71,8 @@ public class WebSecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) {
         return httpSecurity
+                .cors()
+                .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(
                         (swe, e) ->
@@ -84,7 +87,6 @@ public class WebSecurityConfig {
                                 )
                 )
                 .and()
-                .cors().and()
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
@@ -92,7 +94,6 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(AUTH_WHITELIST).permitAll()
-                .pathMatchers("/**").authenticated()
                 .pathMatchers("/post/ban").hasRole("ADMIN")
                 .anyExchange().authenticated()
                 .and()
@@ -100,13 +101,16 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public WebFluxConfigurer corsConfigurer() {
-        return new WebFluxConfigurerComposite() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins(frontendRemoteUrl, frontendLocalUrl)
-                        .allowedMethods("OPTIONS", "GET", "POST", "PUT").allowCredentials(true).allowedHeaders("*");
-            }
-        };
+    public CorsConfigurationSource corsConfigurationSource() {
+        var configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(frontendLocalUrl, frontendRemoteUrl));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT"));
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }
