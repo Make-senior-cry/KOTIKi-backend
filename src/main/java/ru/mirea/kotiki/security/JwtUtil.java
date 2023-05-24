@@ -103,12 +103,16 @@ public class JwtUtil {
                 .from("access-token", "expired")
                 .path("/")
                 .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
                 .maxAge(0)
                 .build());
         response.addCookie(ResponseCookie
                 .from("refresh-token", "expired")
                 .path("/")
                 .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
                 .maxAge(0)
                 .build());
     }
